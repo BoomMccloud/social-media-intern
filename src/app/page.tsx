@@ -1,5 +1,5 @@
-import { Card } from "antd";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -7,10 +7,12 @@ export default function Home() {
       <main className="grid grid-cols-[repeat(auto-fit,_minmax(200px,300px))] row-start-2 gap-4">
         {Array.from({ length: 10 }).map((temp) => (
           <div className="border rounded-md overflow-hidden hover:scale-110 transition-all">
-            <img
-              alt="example"
-              src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png"
-            />
+            <Link href="/chat">
+              <img
+                alt="example"
+                src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png"
+              />
+            </Link>
           </div>
         ))}
       </main>
