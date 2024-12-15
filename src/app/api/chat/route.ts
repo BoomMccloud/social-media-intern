@@ -1,25 +1,46 @@
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+// src/app/api/chat/route.ts
+import { ChatService, ModelConfig } from '@/utils/vertexai';
+import { NextRequest, NextResponse } from 'next/server';
+import path from 'path';
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+const keyFilename = path.join(process.cwd(), 'secrets', 'speak-to-me.json');
 
-export async function POST(req: Request) {
-  const { prompt } = await req.json();
+const modelConfig: ModelConfig = {
+  endpointId: process.env.ENDPOINT_ID!,
+  deployedModelId: process.env.DEPLOYED_MODEL_ID!
+};
 
-  const result = await streamText({
-    model: openai('gpt-4-turbo'),
-    messages: [
-      {
-        role: 'system',
-        content: prompt,
-      },
-    ],
-    async onFinish() {
-      // implement your own logic here, e.g. for storing messages
-      // or recording token usage
-    },
-  });
+const chatService = new ChatService(
+  process.env.GOOGLE_PROJECT_ID!,
+  process.env.VERTEX_LOCATION!,
+  modelConfig,
+  keyFilename
+);
 
-  return result.toTextStreamResponse();
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { content } = body;
+
+    // Validate content
+    if (typeof content !== 'string' || !content.trim()) {
+      return NextResponse.json(
+        { error: 'Invalid request body. "content" must be a non-empty string.' },
+        { status: 400 }
+      );
+    }
+
+    // Add system instruction to the content
+    const fullPrompt = "Always answer in rhymes.\n\nUser: " + content;
+    
+    const response = await chatService.generateResponse(fullPrompt);
+    
+    return NextResponse.json({ response });
+  } catch (error: any) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
+  }
 }
