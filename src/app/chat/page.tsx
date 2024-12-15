@@ -24,18 +24,18 @@ export default function Chat() {
             avatar: "https://docs.nlkit.com/nlux/images/personas/alex.png",
           },
         }}
-        // conversationOptions={{
-        //   conversationStarters: [
-        //     // Funny prompts as if you're talking to HarryBotter
-        //     { prompt: "What is the spell to make my code work?" },
-        //     { prompt: "Can you show me a magic trick?" },
-        //     { prompt: "Where can I find the book of wizardry?" },
-        //   ],
-        // }}
+        conversationOptions={{
+          conversationStarters: [
+            // Funny prompts as if you're talking to HarryBotter
+            { prompt: "What is the spell to make my code work?" },
+            { prompt: "Can you show me a magic trick?" },
+            { prompt: "Where can I find the book of wizardry?" },
+          ],
+        }}
       >
-        <AiChatUI.Greeting>
+        {/* <AiChatUI.Greeting>
           <span className="rounded">Hello! 👋</span>
-        </AiChatUI.Greeting>
+        </AiChatUI.Greeting> */}
       </AiChat>
     </div>
   );
