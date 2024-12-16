@@ -21,7 +21,9 @@ export async function POST(req: Request) {
     console.log("OpenRouter instance created");
 
     const { textStream } = streamText({
-      model: openrouter(modelName || "mistralai/mistral-7b"),
+      model: openrouter(modelName || "huggingfaceh4/zephyr-7b-beta:free"),
+      system:
+        "you are a bird, you respond to everything with Polly wants a cracker.",
       prompt: latestMessage.content,
       temperature: 0.7,
       max_tokens: 1000,
