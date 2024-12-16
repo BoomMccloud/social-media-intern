@@ -1,55 +1,84 @@
 // src/app/api/chat/route.ts
-import { ChatService } from "@/utils/vertexai";
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { streamText } from "ai";
 
-const keyFilename = path.join(process.cwd(), "secrets", "speak-to-me.json");
-
-const defaultParameters = {
-  max_new_tokens: 64,
-  temperature: 1.0,
-  top_p: 0.9,
-  top_k: 10,
-};
-
-const chatService = new ChatService(
-  process.env.GOOGLE_PROJECT_ID!,
-  process.env.VERTEX_LOCATION!,
-  process.env.ENDPOINT_ID!,
-  keyFilename
-);
-
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { system, user } = body;
+    console.log("API route hit - starting request processing");
 
-    if (typeof system !== "string" || !system.trim()) {
-      return NextResponse.json(
-        { error: 'Invalid request body. "system" must be a non-empty string.' },
-        { status: 400 }
-      );
-    }
+    // Parse the request body
+    const body = await req.json();
+    console.log("Request body:", body);
 
-    if (typeof user !== "string" || !user.trim()) {
-      return NextResponse.json(
-        { error: 'Invalid request body. "user" must be a non-empty string.' },
-        { status: 400 }
-      );
-    }
+    const { messages, modelName } = body;
+    const latestMessage = messages[messages.length - 1];
+    console.log("Latest message:", latestMessage);
+    console.log("Selected model:", modelName);
 
-    try {
-      const response = await chatService.generateResponse(
-        { system, user },
-        defaultParameters
-      );
-      return NextResponse.json({ response });
-    } catch (error: any) {
-      console.error("Prediction error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-  } catch (error: any) {
-    console.error("Request error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const openrouter = createOpenRouter({
+      apiKey: process.env.OPENROUTER_API_KEY!,
+    });
+    console.log("OpenRouter instance created");
+
+    const { textStream } = streamText({
+      model: openrouter(modelName || "mistralai/mistral-7b"),
+      prompt: latestMessage.content,
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+    console.log("Text stream created");
+
+    // Set up Server-Sent Events headers
+    const encoder = new TextEncoder();
+
+    let responseStream = new ReadableStream({
+      async start(controller) {
+        try {
+          console.log("Starting stream processing");
+          for await (const textPart of textStream) {
+            console.log("Received text part:", textPart);
+            // Format the chunk as expected by useChat
+            const chunk = {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content: textPart,
+              createdAt: new Date(),
+            };
+
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
+            );
+          }
+          console.log("Stream completed, closing controller");
+          // Send the [DONE] message
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (error) {
+          console.error("Stream processing error:", error);
+          controller.error(error);
+        }
+      },
+    });
+
+    console.log("Returning response stream");
+    return new Response(responseStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch (error) {
+    console.error("Error in chat route:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Failed to process chat request",
+        details: error.message,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
