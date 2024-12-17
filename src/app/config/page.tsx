@@ -10,7 +10,6 @@ export default function TestPage() {
   const [selectedModel, setSelectedModel] = useState<ModelConfig>(DEFAULT_MODELS[0]);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
-  // Load current configuration on mount
   useEffect(() => {
     loadCurrentConfig();
   }, []);
@@ -24,7 +23,6 @@ export default function TestPage() {
       setSelectedModel(config[0]);
     } catch (error) {
       console.error('Error loading configuration:', error);
-      // Fallback to default models if loading fails
       setModels(DEFAULT_MODELS);
       setSelectedModel(DEFAULT_MODELS[0]);
     }
@@ -37,6 +35,32 @@ export default function TestPage() {
     }
   };
 
+  const addNewModel = () => {
+    const newModel: ModelConfig = {
+      id: `model-${Date.now()}`,
+      name: 'New Model',
+      systemPrompt: 'You are a helpful AI assistant.',
+      temperature: 0.7,
+      maxTokens: 1000
+    };
+    
+    setModels([...models, newModel]);
+    setSelectedModel(newModel);
+  };
+
+  const deleteModel = (modelId: string) => {
+    if (models.length <= 1) {
+      alert('Cannot delete the last model');
+      return;
+    }
+    
+    const updatedModels = models.filter(m => m.id !== modelId);
+    setModels(updatedModels);
+    if (selectedModel.id === modelId) {
+      setSelectedModel(updatedModels[0]);
+    }
+  };
+
   const updateModels = (updatedModel: ModelConfig) => {
     setModels(models.map(model => 
       model.id === updatedModel.id ? updatedModel : model
@@ -46,7 +70,6 @@ export default function TestPage() {
   const handleSave = async () => {
     setSaveStatus('saving');
     try {
-      // Update the models array with the latest selected model changes
       const updatedModels = models.map(model => 
         model.id === selectedModel.id ? selectedModel : model
       );
@@ -73,46 +96,40 @@ export default function TestPage() {
     }
   };
 
-  const getSaveButtonText = () => {
-    switch (saveStatus) {
-      case 'saving': return 'Saving...';
-      case 'success': return 'Saved!';
-      case 'error': return 'Error Saving';
-      default: return 'Save Configuration';
-    }
-  };
-
-  const getSaveButtonClass = () => {
-    const baseClass = 'px-4 py-2 rounded transition-colors';
-    switch (saveStatus) {
-      case 'saving':
-        return `${baseClass} bg-yellow-500 text-white cursor-not-allowed`;
-      case 'success':
-        return `${baseClass} bg-green-500 text-white`;
-      case 'error':
-        return `${baseClass} bg-red-500 text-white`;
-      default:
-        return `${baseClass} bg-blue-500 text-white hover:bg-blue-600`;
-    }
-  };
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Model Configuration Tester</h1>
       
-      <div className="mb-6">
-        <label className="block mb-2">Select Model:</label>
-        <select
-          value={selectedModel.id}
-          onChange={(e) => handleModelChange(e.target.value)}
-          className="w-full p-2 border rounded text-black"
-        >
-          {models.map((model) => (
-            <option key={model.id} value={model.id}>
-              {model.name}
-            </option>
-          ))}
-        </select>
+      <div className="mb-6 flex items-center gap-4">
+        <div className="flex-grow">
+          <label className="block mb-2">Select Model:</label>
+          <select
+            value={selectedModel.id}
+            onChange={(e) => handleModelChange(e.target.value)}
+            className="w-full p-2 border rounded text-black"
+          >
+            {models.map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-2 items-end">
+          <button
+            onClick={addNewModel}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Add Model
+          </button>
+          <button
+            onClick={() => deleteModel(selectedModel.id)}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            disabled={models.length <= 1}
+          >
+            Delete Model
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -193,9 +210,17 @@ export default function TestPage() {
         <button
           onClick={handleSave}
           disabled={saveStatus === 'saving'}
-          className={getSaveButtonClass()}
+          className={`px-4 py-2 rounded transition-colors ${
+            saveStatus === 'saving' ? 'bg-yellow-500' :
+            saveStatus === 'success' ? 'bg-green-500' :
+            saveStatus === 'error' ? 'bg-red-500' :
+            'bg-blue-500 hover:bg-blue-600'
+          } text-white`}
         >
-          {getSaveButtonText()}
+          {saveStatus === 'saving' ? 'Saving...' :
+           saveStatus === 'success' ? 'Saved!' :
+           saveStatus === 'error' ? 'Error Saving' :
+           'Save Configuration'}
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 // src/lib/config.ts
 import { promises as fs } from "fs";
+import path from "path";
 import { CONFIG_FILE_PATH } from "./constants";
 import { ModelConfig } from "@/types/chat";
 
