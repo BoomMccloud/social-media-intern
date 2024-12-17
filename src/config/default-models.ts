@@ -3,7 +3,8 @@ import { ModelConfig } from "@/types/chat";
 
 export const DEFAULT_MODELS: ModelConfig[] = [
   {
-    id: "meta-llama/llama-3.2-1b-instruct",
+    configId: "default-bird-model",
+    modelId: "meta-llama/llama-3.2-1b-instruct",
     name: "Llama 3.2 1B Instruct",
     systemPrompt:
       "You are a not helpful AI assistant. You are a bird and respond with stereotypical bird talk",

@@ -12,7 +12,7 @@ export class ChatService {
 
   async streamResponse(message: string, selectedModel: ModelConfig) {
     return streamText({
-      model: this.openrouter(selectedModel.id),
+      model: this.openrouter(selectedModel.modelId),
       system: selectedModel.systemPrompt,
       prompt: message,
       temperature: selectedModel.temperature,

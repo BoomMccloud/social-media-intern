@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { ChatService } from "@/lib/chat-service";
 import { getModelConfigs } from "@/lib/config";
 import { DEFAULT_MODELS } from "@/config/default-models";
-import { DEFAULT_MODEL } from "@/lib/constants";
 
 export async function POST(req: Request) {
   try {
