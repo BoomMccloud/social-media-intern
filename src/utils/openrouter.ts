@@ -19,7 +19,7 @@ export const streamChat = async (prompt: string, modelName: string) => {
       prompt: prompt,
       // Add any additional parameters you might need
       temperature: 0.7,
-      max_tokens: 1000,
+      maxTokens: 1000,
     });
 
     return result;

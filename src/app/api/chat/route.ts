@@ -31,12 +31,13 @@ export async function POST(req: Request) {
         "you are a bird, you respond to everything with Polly wants a cracker.",
       prompt: latestMessage.content,
       temperature: 0.7,
-      max_tokens: 1000,
+      maxTokens: 1000,
     });
+
     console.log("Text stream created");
 
     // Rest of the code remains the same...
-    const encoder = new TextEncoder();
+    // const encoder = new TextEncoder();
 
     // let responseStream = new ReadableStream({
     //   async start(controller) {
@@ -65,20 +66,23 @@ export async function POST(req: Request) {
     //   },
     // });
 
-    console.log("Returning response stream");
-    return new Response(responseStream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    });
+    // console.log("Returning response stream");
+    // return new Response(responseStream, {
+    //   headers: {
+    //     "Content-Type": "text/event-stream",
+    //     "Cache-Control": "no-cache",
+    //     Connection: "keep-alive",
+    //   },
+    // });
+
+    // Temporary return to make the function compile
+    return new Response("Not implemented", { status: 501 });
   } catch (error) {
     console.error("Error in chat route:", error);
     return new Response(
       JSON.stringify({
         error: "Failed to process chat request",
-        details: error.message,
+        details: (error as Error).message,
       }),
       {
         status: 500,

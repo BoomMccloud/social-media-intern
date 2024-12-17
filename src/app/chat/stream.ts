@@ -8,7 +8,7 @@ interface ChatMessage {
 }
 
 export const streamText = async (
-  prompt: string, // Keep original prompt parameter
+  prompt: string,
   observer: StreamingAdapterObserver
 ) => {
   const messages = [
@@ -68,7 +68,8 @@ export const streamText = async (
       }
     }
   } catch (error) {
-    observer.error(error);
+    // Convert unknown error to Error object
+    observer.error(error instanceof Error ? error : new Error(String(error)));
   }
 
   observer.complete();

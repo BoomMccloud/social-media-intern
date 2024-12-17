@@ -1,5 +1,6 @@
 "use client";
 import { Layout, Menu, Button } from "antd";
+import type { MenuProps } from "antd";
 import {
   DesktopOutlined,
   FileOutlined,

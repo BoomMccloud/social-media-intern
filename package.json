@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.8",
+    "@ant-design/icons": "^5.5.2",
     "@google-cloud/aiplatform": "^3.34.0",
     "@google-cloud/vertexai": "^1.9.2",
     "@nlux/react": "^2.17.1",
