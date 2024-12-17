@@ -22,7 +22,7 @@ export const streamText = async (
     method: "POST",
     body: JSON.stringify({
       messages,
-      modelName: "huggingfaceh4/zephyr-7b-beta:free", // Default model
+      modelName: "meta-llama/llama-3.2-1b-instruct", // Default model
     }),
     headers: { "Content-Type": "application/json" },
   });

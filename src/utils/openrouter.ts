@@ -3,10 +3,10 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { streamText } from "ai";
 
 // Define a type for the chat message
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
+// interface ChatMessage {
+//   role: "user" | "assistant";
+//   content: string;
+// }
 
 export const streamChat = async (prompt: string, modelName: string) => {
   const openrouter = createOpenRouter({
