@@ -1,6 +1,6 @@
 "use client";
 import { streamText } from "@/app/chat/stream";
-import { AiChat, AiChatUI, useAsStreamAdapter } from "@nlux/react";
+import { AiChat, useAsStreamAdapter } from "@nlux/react";
 import "@nlux/themes/nova.css";
 
 export default function Chat() {
