@@ -44,10 +44,10 @@ const items: MenuItem[] = [
 ];
 
 const siderStyle: React.CSSProperties = {
-  overflow: "auto",
+  // overflow: "auto",
   height: "100vh",
-  position: "fixed",
-  insetInlineStart: 0,
+  position: "sticky",
+  // insetInlineStart: 0,
   top: 0,
   bottom: 0,
   scrollbarWidth: "thin",
@@ -62,7 +62,6 @@ export const Sidebar = () => {
       collapsible
       collapsed={collapsed}
       onCollapse={(value) => setCollapsed(value)}
-      style={siderStyle}
     >
       <div className="flex flex-col justify-between p-2 h-full">
         <Menu

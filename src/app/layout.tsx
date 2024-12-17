@@ -35,8 +35,8 @@ export default function RootLayout({
         >
           <Layout className="min-h-screen">
             <Sidebar />
-            <Layout style={{ marginInlineStart: 200 }}>
-              <Content style={{ margin: "0 16px" }}>{children}</Content>
+            <Layout>
+              <Content>{children}</Content>
             </Layout>
           </Layout>
         </ConfigProvider>
