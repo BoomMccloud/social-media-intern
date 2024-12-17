@@ -8,7 +8,7 @@ export default function Chat() {
   return (
     <div className="flex justify-center w-screen h-screen items-center">
       <AiChat
-        displayOptions={{ width: "50%", height: "50%" }}
+        displayOptions={{ width: "60%", height: "50%" }}
         adapter={createStreamingAdapter()}
         personaOptions={{
           assistant: {

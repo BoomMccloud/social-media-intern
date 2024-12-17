@@ -3,39 +3,70 @@ import { StreamingAdapter } from "@nlux/react";
 import { ChatMessage, ModelConfig } from "@/types/chat";
 
 const fetchActiveModelId = async (): Promise<string> => {
-  // Always fetch fresh configuration
+  console.log("Fetching current model configuration...");
   const configResponse = await fetch("/api/config");
   if (!configResponse.ok) {
+    console.error("Failed to fetch configuration:", configResponse.status);
     throw new Error("Failed to fetch model configuration");
   }
 
   const models: ModelConfig[] = await configResponse.json();
+  console.log("Loaded models:", models);
+
   const activeModel = models.find((model) => model.isActive);
+  console.log("Found active model:", activeModel || "none");
+
   const firstModel = models[0];
+  console.log("First model in array:", firstModel || "none");
 
   if (!activeModel && !firstModel) {
+    console.error("No models found in configuration");
     throw new Error("No models configured");
   }
 
-  const modelId = activeModel?.modelId || firstModel?.modelId;
+  let modelId;
+  if (activeModel) {
+    console.log("Using active model:", {
+      configId: activeModel.configId,
+      modelId: activeModel.modelId,
+      name: activeModel.name,
+      isActive: activeModel.isActive,
+    });
+    modelId = activeModel.modelId;
+  } else {
+    console.log("No active model found, falling back to first model:", {
+      configId: firstModel.configId,
+      modelId: firstModel.modelId,
+      name: firstModel.name,
+      isActive: firstModel.isActive,
+    });
+    modelId = firstModel.modelId;
+  }
 
   if (!modelId) {
+    console.error("Selected model has no modelId", {
+      usingActiveModel: !!activeModel,
+      selectedModel: activeModel || firstModel,
+    });
     throw new Error("Selected model configuration has no modelId");
   }
 
+  console.log("Final selected modelId for chat request:", modelId);
   return modelId;
 };
 
-// This function now exists just for compatibility with the config page
-// It doesn't do anything since we always fetch fresh config
 export const invalidateModelConfig = () => {
-  // No-op: we always fetch fresh config
+  console.log(
+    "invalidateModelConfig called - ensuring fresh config on next request"
+  );
 };
 
 export const createStreamingAdapter = (): StreamingAdapter => ({
   streamText: async (text, observer) => {
     try {
+      console.log("Starting new chat stream request...");
       const modelId = await fetchActiveModelId();
+      console.log("Sending chat request with modelId:", modelId);
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -47,7 +78,15 @@ export const createStreamingAdapter = (): StreamingAdapter => ({
       });
 
       if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+        const errorText = await response.text();
+        console.error("Chat API request failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+        });
+        throw new Error(
+          `Server responded with ${response.status}: ${errorText}`
+        );
       }
 
       const reader = response.body?.getReader();
@@ -64,7 +103,10 @@ export const createStreamingAdapter = (): StreamingAdapter => ({
           if (!line.startsWith("data: ")) continue;
 
           const data = line.slice(6);
-          if (data === "[DONE]") break;
+          if (data === "[DONE]") {
+            console.log("Stream completed successfully");
+            break;
+          }
 
           try {
             const message: ChatMessage = JSON.parse(data);
@@ -77,6 +119,7 @@ export const createStreamingAdapter = (): StreamingAdapter => ({
 
       observer.complete();
     } catch (error) {
+      console.error("Stream error:", error);
       observer.error(error instanceof Error ? error : new Error(String(error)));
     }
   },
