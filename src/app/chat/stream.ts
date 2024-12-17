@@ -1,40 +1,75 @@
-import {StreamingAdapterObserver} from '@nlux/react';
+import { StreamingAdapterObserver } from "@nlux/react";
 
-// We connect to /api/chat to stream text from the server
-// We use HTTP POST to send the prompt to the server, and receive a stream of server-sent events
-// We use the observer object passed by NLUX to send chunks of text to <AiChat />
-export const streamText = async (prompt: string, observer: StreamingAdapterObserver) => {
-    const response = await fetch('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({prompt: prompt}),
-        headers: {'Content-Type': 'application/json'},
-    });
+interface ChatMessage {
+  id: string;
+  role: string;
+  content: string;
+  createdAt: Date;
+}
 
-    if (response.status !== 200) {
-        observer.error(new Error('Failed to connect to the server'));
-        return;
-    }
+export const streamText = async (
+  prompt: string, // Keep original prompt parameter
+  observer: StreamingAdapterObserver
+) => {
+  const messages = [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
 
-    if (!response.body) {
-        return;
-    }
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    body: JSON.stringify({
+      messages,
+      modelName: "huggingfaceh4/zephyr-7b-beta:free", // Default model
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
 
-    // Read a stream of server-sent events
-    // and feed them to the observer as they are being generated
-    const reader = response.body.getReader();
-    const textDecoder = new TextDecoder();
+  if (response.status !== 200) {
+    observer.error(new Error("Failed to connect to the server"));
+    return;
+  }
 
+  if (!response.body) {
+    return;
+  }
+
+  const reader = response.body.getReader();
+  const textDecoder = new TextDecoder();
+
+  try {
     while (true) {
-        const { value, done } = await reader.read();
-        if (done) {
+      const { value, done } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      const chunk = textDecoder.decode(value);
+      const lines = chunk.split("\n");
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const data = line.slice(6); // Remove 'data: ' prefix
+
+          // Check if it's the completion signal
+          if (data === "[DONE]") {
             break;
-        }
+          }
 
-        const content = textDecoder.decode(value);
-        if (content) {
-            observer.next(content);
+          try {
+            const message: ChatMessage = JSON.parse(data);
+            observer.next(message.content);
+          } catch (e) {
+            console.error("Failed to parse SSE message:", e);
+          }
         }
+      }
     }
+  } catch (error) {
+    observer.error(error);
+  }
 
-    observer.complete();
+  observer.complete();
 };
