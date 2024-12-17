@@ -1,5 +1,5 @@
 "use client";
-import { streamText } from "@/src/app/chat/stream";
+import { streamText } from "@/app/chat/stream";
 import { AiChat, AiChatUI, useAsStreamAdapter } from "@nlux/react";
 import "@nlux/themes/nova.css";
 
@@ -10,7 +10,7 @@ export default function Chat() {
   return (
     <div className="flex justify-center w-screen h-screen items-center">
       <AiChat
-        displayOptions={{ width: "80%", height: "50%" }}
+        displayOptions={{ width: "50%", height: "50%" }}
         adapter={chatAdapter}
         personaOptions={{
           assistant: {
