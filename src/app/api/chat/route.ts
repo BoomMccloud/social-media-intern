@@ -37,43 +37,43 @@ export async function POST(req: Request) {
     console.log("Text stream created");
 
     // Rest of the code remains the same...
-    // const encoder = new TextEncoder();
+    const encoder = new TextEncoder();
 
-    // let responseStream = new ReadableStream({
-    //   async start(controller) {
-    //     try {
-    //       console.log("Starting stream processing");
-    //       for await (const textPart of textStream) {
-    //         console.log("Received text part:", textPart);
-    //         const chunk = {
-    //           id: crypto.randomUUID(),
-    //           role: "assistant",
-    //           content: textPart,
-    //           createdAt: new Date(),
-    //         };
+    let responseStream = new ReadableStream({
+      async start(controller) {
+        try {
+          console.log("Starting stream processing");
+          for await (const textPart of textStream) {
+            console.log("Received text part:", textPart);
+            const chunk = {
+              id: crypto.randomUUID(),
+              role: "assistant",
+              content: textPart,
+              createdAt: new Date(),
+            };
 
-    //         controller.enqueue(
-    //           encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
-    //         );
-    //       }
-    //       console.log("Stream completed, closing controller");
-    //       controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-    //       controller.close();
-    //     } catch (error) {
-    //       console.error("Stream processing error:", error);
-    //       controller.error(error);
-    //     }
-    //   },
-    // });
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
+            );
+          }
+          console.log("Stream completed, closing controller");
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (error) {
+          console.error("Stream processing error:", error);
+          controller.error(error);
+        }
+      },
+    });
 
-    // console.log("Returning response stream");
-    // return new Response(responseStream, {
-    //   headers: {
-    //     "Content-Type": "text/event-stream",
-    //     "Cache-Control": "no-cache",
-    //     Connection: "keep-alive",
-    //   },
-    // });
+    console.log("Returning response stream");
+    return new Response(responseStream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
 
     // Temporary return to make the function compile
     return new Response("Not implemented", { status: 501 });
