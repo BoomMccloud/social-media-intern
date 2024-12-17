@@ -1,4 +1,3 @@
-// src/app/api/chat/route.ts
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { streamText } from "ai";
 
@@ -11,6 +10,12 @@ export async function POST(req: Request) {
     console.log("Request body:", body);
 
     const { messages, modelName } = body;
+
+    // Add null checking for messages
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      throw new Error("Messages array is required and must not be empty");
+    }
+
     const latestMessage = messages[messages.length - 1];
     console.log("Latest message:", latestMessage);
     console.log("Selected model:", modelName);
@@ -30,7 +35,7 @@ export async function POST(req: Request) {
     });
     console.log("Text stream created");
 
-    // Set up Server-Sent Events headers
+    // Rest of the code remains the same...
     const encoder = new TextEncoder();
 
     let responseStream = new ReadableStream({
@@ -39,7 +44,6 @@ export async function POST(req: Request) {
           console.log("Starting stream processing");
           for await (const textPart of textStream) {
             console.log("Received text part:", textPart);
-            // Format the chunk as expected by useChat
             const chunk = {
               id: crypto.randomUUID(),
               role: "assistant",
@@ -52,7 +56,6 @@ export async function POST(req: Request) {
             );
           }
           console.log("Stream completed, closing controller");
-          // Send the [DONE] message
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           controller.close();
         } catch (error) {
