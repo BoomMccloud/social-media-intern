@@ -1,4 +1,3 @@
-// src/app/api/chat/route.ts
 import { NextResponse } from "next/server";
 import { ChatService } from "@/lib/chat-service";
 import { getModelConfigs } from "@/lib/config";
@@ -10,16 +9,17 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log("2. Request body:", body);
 
-    const { messages } = body;
+    const { messages, configId } = body;
     console.log("3. Received messages:", messages);
+    console.log("4. Received configId:", configId);
 
     if (!messages?.length) {
-      console.log("4. Error: Empty messages array");
+      console.log("5. Error: Empty messages array");
       throw new Error("Messages array is required and must not be empty");
     }
 
     console.log(
-      "5. Checking OPENROUTER_API_KEY:",
+      "6. Checking OPENROUTER_API_KEY:",
       !!process.env.OPENROUTER_API_KEY
     );
     if (!process.env.OPENROUTER_API_KEY) {
@@ -28,24 +28,41 @@ export async function POST(req: Request) {
 
     // Load current model configurations
     const modelConfigs = await getModelConfigs(DEFAULT_MODELS);
-    console.log("6. Model configs loaded:", modelConfigs);
+    console.log("7. Model configs loaded:", modelConfigs);
 
-    // Always try to find the active model first
-    const activeModel = modelConfigs.find((model) => model.isActive);
-    console.log("7. Found active model:", activeModel || "none");
+    // Selection logic: first try configId, then active model, then fallback to first model
+    let selectedModel;
 
-    // Fallback to first model if no active model
-    const selectedModel = activeModel || modelConfigs[0];
-    console.log("8. Selected model:", {
+    if (configId) {
+      selectedModel = modelConfigs.find((model) => model.configId === configId);
+      console.log("8a. Looking for model with configId:", configId);
+      if (!selectedModel) {
+        console.log("8b. Warning: Requested configId not found:", configId);
+      }
+    }
+
+    if (!selectedModel) {
+      // Fallback to active model if no configId match
+      const activeModel = modelConfigs.find((model) => model.isActive);
+      console.log("9. Found active model:", activeModel || "none");
+      selectedModel = activeModel || modelConfigs[0];
+    }
+
+    console.log("10. Selected model:", {
       configId: selectedModel.configId,
       modelId: selectedModel.modelId,
       name: selectedModel.name,
       isActive: selectedModel.isActive,
-      reason: activeModel ? "active model" : "fallback to first model",
+      reason:
+        configId && selectedModel.configId === configId
+          ? "configId match"
+          : selectedModel.isActive
+          ? "active model"
+          : "fallback to first model",
     });
 
     if (!selectedModel.modelId) {
-      console.error("9. Error: Selected model has no modelId");
+      console.error("11. Error: Selected model has no modelId");
       throw new Error("Selected model configuration has no modelId");
     }
 
@@ -53,24 +70,24 @@ export async function POST(req: Request) {
 
     try {
       console.log(
-        "10. Attempting to stream response using model:",
+        "12. Attempting to stream response using model:",
         selectedModel.modelId
       );
       const { textStream } = await chatService.streamResponse(
         messages[messages.length - 1].content,
         selectedModel
       );
-      console.log("11. Stream created successfully");
+      console.log("13. Stream created successfully");
 
       // Create the response stream
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
         async start(controller) {
           try {
-            console.log("12. Starting stream processing");
+            console.log("14. Starting stream processing");
             for await (const textPart of textStream) {
               console.log(
-                "13. Received text part:",
+                "15. Received text part:",
                 textPart.slice(0, 50) + "..."
               );
               const chunk = {
@@ -85,9 +102,9 @@ export async function POST(req: Request) {
             }
             controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
-            console.log("14. Stream completed successfully");
+            console.log("16. Stream completed successfully");
           } catch (error) {
-            console.error("15. Stream processing error:", error);
+            console.error("17. Stream processing error:", error);
             controller.error(error);
           }
         },
@@ -101,11 +118,11 @@ export async function POST(req: Request) {
         },
       });
     } catch (streamError) {
-      console.error("16. Streaming error:", streamError);
+      console.error("18. Streaming error:", streamError);
       throw streamError;
     }
   } catch (error) {
-    console.error("17. Final error catch:", error);
+    console.error("19. Final error catch:", error);
     return NextResponse.json(
       {
         error: "Failed to process chat request",

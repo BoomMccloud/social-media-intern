@@ -1,7 +1,5 @@
-// src/app/chat/stream.ts
 import { ChatMessage } from "@/types/chat";
 
-// Define our own StreamingAdapter type
 interface StreamObserver {
   next: (content: string) => void;
   error: (error: Error) => void;
@@ -12,18 +10,20 @@ interface StreamingAdapter {
   streamText: (text: string, observer: StreamObserver) => Promise<void>;
 }
 
-// This function exists just for compatibility with the config page
 export const invalidateModelConfig = () => {
   // No-op as model selection is handled server-side
 };
 
-export const createStreamingAdapter = (): StreamingAdapter => ({
+export const createStreamingAdapter = (
+  configId?: string | null
+): StreamingAdapter => ({
   streamText: async (text, observer) => {
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         body: JSON.stringify({
           messages: [{ role: "user", content: text }],
+          configId: configId,
         }),
         headers: { "Content-Type": "application/json" },
       });
