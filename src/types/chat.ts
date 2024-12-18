@@ -14,4 +14,6 @@ export interface ModelConfig {
   temperature: number;
   maxTokens: number;
   isActive: boolean;
+  profilePicture: string;
+  avatar: string;
 }

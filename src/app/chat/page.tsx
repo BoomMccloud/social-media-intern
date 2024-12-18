@@ -5,14 +5,7 @@ import { AiChat } from "@nlux/react";
 import "@nlux/themes/nova.css";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface ModelData {
-  configId: string;
-  name: string;
-  systemPrompt: string;
-  isActive: boolean;
-  modelId: string;
-}
+import { ModelConfig } from "@/types/chat";
 
 function LoadingState() {
   return (
@@ -40,7 +33,7 @@ function ChatComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const configId = searchParams.get('configId');
-  const [model, setModel] = useState<ModelData | null>(null);
+  const [model, setModel] = useState<ModelConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,12 +72,12 @@ function ChatComponent() {
         personaOptions={{
           assistant: {
             name: model.name,
-            avatar: "/api/placeholder/200/200",
+            avatar: model.avatar,
             tagline: model.systemPrompt.split('\n')[0], // Use first line of system prompt as tagline
           },
           user: {
             name: "User",
-            avatar: "/api/placeholder/200/200",
+            avatar: "/images/user/avatar.jpg",
           },
         }}
       />

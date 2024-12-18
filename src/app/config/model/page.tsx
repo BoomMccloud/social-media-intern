@@ -66,7 +66,9 @@ export default function TestPage() {
       systemPrompt: 'You are a helpful AI assistant.',
       temperature: 0.7,
       maxTokens: 1000,
-      isActive: false
+      isActive: false,
+      profilePicture: '',
+      avatar: '',
     };
     
     setModels([...models, newModel]);

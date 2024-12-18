@@ -1,23 +1,16 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import { ModelConfig } from "@/types/chat";
 
 // Define types for our model data
-interface ModelConfig {
-  configId: string;
-  name: string;
-  systemPrompt: string;
-  isActive: boolean;
-  modelId: string;
-  temperature: number;
-  maxTokens: number;
-}
 
 interface UiModelData {
   configId: string;
   name: string;
   description: string;
   isActive: boolean;
+  profilePicture: string;
 }
 
 interface ChatModelData {
@@ -26,6 +19,7 @@ interface ChatModelData {
   systemPrompt: string;
   isActive: boolean;
   modelId: string;
+  avatar: string;
 }
 
 export async function GET(req: Request) {
@@ -51,6 +45,7 @@ export async function GET(req: Request) {
         name: model.name,
         description: model.systemPrompt.split("\n")[0], // Get first line of system prompt as description
         isActive: model.isActive,
+        profilePicture: model.profilePicture,
       }));
 
       return NextResponse.json(pageData);
@@ -62,6 +57,7 @@ export async function GET(req: Request) {
         systemPrompt: model.systemPrompt,
         isActive: model.isActive,
         modelId: model.modelId,
+        avatar: model.avatar,
       }));
 
       // If configId is provided, return only that model

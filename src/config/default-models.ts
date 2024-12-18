@@ -11,5 +11,7 @@ export const DEFAULT_MODELS: ModelConfig[] = [
     temperature: 0.7,
     maxTokens: 1000,
     isActive: true, // Mark as active by default
+    profilePicture: "",
+    avatar: "",
   },
 ];
