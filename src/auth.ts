@@ -3,6 +3,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/utils/prisma";
+import type { NextAuthConfig } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -21,7 +22,7 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("Missing Google OAuth Credentials");
 }
 
-const authOptions = {
+const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
     Google({
@@ -41,7 +42,7 @@ const authOptions = {
     error: "/auth/error",
   },
   callbacks: {
-    redirect({ url, baseUrl }) {
+    redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
@@ -105,6 +106,4 @@ const authOptions = {
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth(authOptions);
-
-// Add a default export of the config
 export default authOptions;
