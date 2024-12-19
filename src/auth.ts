@@ -2,9 +2,15 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error("Missing Google OAuth Credentials");
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "select_account",
@@ -15,17 +21,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    // Handle redirect
     async redirect({ url, baseUrl }) {
-      // Check if the url is relative
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
-      }
-      // If the url is already absolute but on the same site, allow it
-      else if (new URL(url).origin === baseUrl) {
+      } else if (new URL(url).origin === baseUrl) {
         return url;
       }
-      // Otherwise, redirect to the base url
       return baseUrl;
     },
   },
