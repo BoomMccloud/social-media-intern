@@ -1,6 +1,8 @@
 // src/app/config/model/page.tsx
 'use client';
 
+import { useSession } from "next-auth/react"
+import { redirect } from "next/navigation"
 import { useState, useEffect } from 'react';
 import { ModelConfig } from '@/types/chat';
 import { DEFAULT_MODELS } from '@/config/default-models';
@@ -9,6 +11,15 @@ import { invalidateModelConfig } from '@/app/chat/stream';
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
 export default function TestPage() {
+
+  // Add session protection at the top of the component
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect('/api/auth/signin')
+    },
+  })
+
   const [models, setModels] = useState<ModelConfig[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelConfig | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');

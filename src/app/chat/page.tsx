@@ -1,11 +1,12 @@
 "use client";
-import { useSearchParams } from "next/navigation";
+
+import { useSearchParams, useRouter } from "next/navigation";
 import { createStreamingAdapter } from "@/app/chat/stream";
 import { AiChat } from "@nlux/react";
 import "@nlux/themes/nova.css";
 import { Suspense, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ModelConfig } from "@/types/chat";
+import { useSession } from "next-auth/react";
 
 function LoadingState() {
   return (
@@ -34,11 +35,13 @@ function ChatComponent() {
   const searchParams = useSearchParams();
   const configId = searchParams.get('configId');
   const [model, setModel] = useState<ModelConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [modelLoading, setModelLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { status, data: session } = useSession();
 
   useEffect(() => {
     async function fetchModel() {
+      setModelLoading(true);
       try {
         const response = await fetch(`/api/model?type=chat${configId ? `&configId=${configId}` : ''}`);
         if (!response.ok) {
@@ -49,14 +52,37 @@ function ChatComponent() {
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load model');
       } finally {
-        setLoading(false);
+        setModelLoading(false);
       }
     }
 
-    fetchModel();
-  }, [configId]);
+    if (status === "authenticated") {
+      fetchModel();
+    }
+  }, [configId, status]);
 
-  if (loading) {
+  // Handle authentication loading
+  if (status === "loading") {
+    return (
+      <div className="flex justify-center w-screen h-screen items-center">
+        <div className="text-xl">Checking authentication...</div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (status === "unauthenticated") {
+    const currentPath = window.location.pathname + window.location.search;
+    router.push(`/api/auth/signin?callbackUrl=${encodeURIComponent(currentPath)}`);
+    return (
+      <div className="flex justify-center w-screen h-screen items-center">
+        <div className="text-xl">Redirecting to login...</div>
+      </div>
+    );
+  }
+
+  // Handle model loading
+  if (modelLoading) {
     return <LoadingState />;
   }
 
@@ -73,11 +99,11 @@ function ChatComponent() {
           assistant: {
             name: model.name,
             avatar: model.avatar,
-            tagline: model.systemPrompt.split('\n')[0], // Use first line of system prompt as tagline
+            tagline: model.systemPrompt.split('\n')[0],
           },
           user: {
-            name: "User",
-            avatar: "/images/user/avatar.jpg",
+            name: session?.user?.name || "User",
+            avatar: session?.user?.image || "/images/user/avatar.jpg",
           },
         }}
       />

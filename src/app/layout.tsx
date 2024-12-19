@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Layout, ConfigProvider, theme } from "antd";
 import { Sidebar } from "../components/Sidebar";
+import Providers from './Providers';
 
 const { Content } = Layout;
 
@@ -25,6 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Providers>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -41,6 +43,7 @@ export default function RootLayout({
           </Layout>
         </ConfigProvider>
       </body>
+      </Providers>
     </html>
   );
 }
