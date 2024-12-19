@@ -4,7 +4,7 @@ import "./globals.css";
 
 import { Layout, ConfigProvider, theme } from "antd";
 import { Sidebar } from "../components/Sidebar";
-import Providers from './Providers';
+import Providers from "./Providers";
 
 const { Content } = Layout;
 
@@ -27,22 +27,42 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Providers>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ConfigProvider
-          theme={{
-            algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
-          }}
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <Layout className="min-h-screen">
-            <Sidebar />
-            <Layout>
-              <Content>{children}</Content>
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: "#F8BBD0",
+              },
+              algorithm: [theme.darkAlgorithm],
+              components: {
+                Layout: {
+                  bodyBg: "#0f0f10",
+                  siderBg: "#0a0a0a",
+                  triggerBg: "#0a0a0a",
+                  triggerColor: "#F8BBD0",
+                },
+                Button: {
+                  primaryColor: "#000000",
+                  colorBgContainer: "transparent",
+                },
+                Menu: {
+                  darkItemBg: "transparent",
+                  darkSubMenuItemBg: "transparent",
+                  darkItemSelectedColor: "#000000",
+                },
+              },
+            }}
+          >
+            <Layout className="min-h-screen">
+              <Sidebar />
+              <Layout>
+                <Content>{children}</Content>
+              </Layout>
             </Layout>
-          </Layout>
-        </ConfigProvider>
-      </body>
+          </ConfigProvider>
+        </body>
       </Providers>
     </html>
   );

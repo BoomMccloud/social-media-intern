@@ -19,7 +19,6 @@ import { signIn, signOut, useSession } from "next-auth/react";
 
 const { Sider } = Layout;
 
-
 type MenuItem = Required<MenuProps>["items"][number];
 
 function getItem(
@@ -39,15 +38,6 @@ function getItem(
 const items: MenuItem[] = [
   getItem("Option 1", "1", <PieChartOutlined />),
   getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("User", "sub1", <UserOutlined />, [
-    getItem("Tom", "3"),
-    getItem("Bill", "4"),
-    getItem("Alex", "5"),
-  ]),
-  getItem("Team", "sub2", <TeamOutlined />, [
-    getItem("Team 1", "6"),
-    getItem("Team 2", "8"),
-  ]),
   getItem("Files", "9", <FileOutlined />),
 ];
 
@@ -70,57 +60,30 @@ export const Sidebar = () => {
     try {
       // Get the callback URL from the URL parameters if it exists
       const searchParams = new URLSearchParams(window.location.search);
-      const callbackUrl = searchParams.get('callbackUrl') || window.location.href;
-  
-      void signIn('google', { 
+      const callbackUrl =
+        searchParams.get("callbackUrl") || window.location.href;
+
+      void signIn("google", {
         prompt: "select_account",
         callbackUrl: callbackUrl,
         redirect: true,
       });
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error("Sign in error:", error);
     }
   };
 
   const handleSignOut = async () => {
     try {
-      await signOut({ 
+      await signOut({
         redirect: true,
-        callbackUrl: '/'  // This will always redirect to home page
+        callbackUrl: "/", // This will always redirect to home page
       });
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
       // Fallback redirect if the signOut fails
-      window.location.href = '/';
+      window.location.href = "/";
     }
-  };
-
-  const renderAuthButton = () => {
-    if (status === "loading") {
-      return <Button className="mb-2 w-full" loading>Loading...</Button>;
-    }
-
-    if (session) {
-      return (
-        <Button
-          className="mb-2 w-full"
-          icon={<LogoutOutlined />}
-          onClick={handleSignOut}
-        >
-          {!collapsed && "Sign out"}
-        </Button>
-      );
-    }
-
-    return (
-      <Button
-        className="mb-2 w-full"
-        icon={<LoginOutlined />}
-        onClick={handleSignIn}
-      >
-        {!collapsed && "Sign in"}
-      </Button>
-    );
   };
 
   return (
@@ -136,7 +99,19 @@ export const Sidebar = () => {
           mode="inline"
           items={items}
         />
-        {renderAuthButton()}
+
+        <Button
+          className="mb-2"
+          icon={session ? <LogoutOutlined /> : <LoginOutlined />}
+          onClick={session ? handleSignOut : handleSignIn}
+          loading={status === "loading"}
+          type="primary"
+          block
+          variant="outlined"
+          color="primary"
+        >
+          {!collapsed && (session ? "Sign out" : "Sign in")}
+        </Button>
       </div>
     </Sider>
   );
