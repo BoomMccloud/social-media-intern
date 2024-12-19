@@ -1,10 +1,9 @@
 "use client";
 import localFont from "next/font/local";
 import "./globals.css";
-
 import { Layout, ConfigProvider, theme } from "antd";
 import { Sidebar } from "../components/Sidebar";
-import Providers from './Providers';
+import Providers from "./Providers";
 
 const { Content } = Layout;
 

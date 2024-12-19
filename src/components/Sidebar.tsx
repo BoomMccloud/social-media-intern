@@ -7,8 +7,8 @@ import {
   DesktopOutlined,
   FileOutlined,
   PieChartOutlined,
-  TeamOutlined,
-  UserOutlined,
+  // TeamOutlined,
+  // UserOutlined,
   LoginOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
@@ -37,26 +37,17 @@ function getItem(
 const items: MenuItem[] = [
   getItem("Option 1", "1", <PieChartOutlined />),
   getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("User", "sub1", <UserOutlined />, [
-    getItem("Tom", "3"),
-    getItem("Bill", "4"),
-    getItem("Alex", "5"),
-  ]),
-  getItem("Team", "sub2", <TeamOutlined />, [
-    getItem("Team 1", "6"),
-    getItem("Team 2", "8"),
-  ]),
   getItem("Files", "9", <FileOutlined />),
 ];
 
-const siderStyle: React.CSSProperties = {
-  height: "100vh",
-  position: "sticky",
-  top: 0,
-  bottom: 0,
-  scrollbarWidth: "thin",
-  scrollbarGutter: "stable",
-};
+// const siderStyle: React.CSSProperties = {
+//   height: "100vh",
+//   position: "sticky",
+//   top: 0,
+//   bottom: 0,
+//   scrollbarWidth: "thin",
+//   scrollbarGutter: "stable",
+// };
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -74,7 +65,7 @@ export const Sidebar = () => {
         callbackUrl: '/'
       });
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
       window.location.href = '/';
     }
   };
