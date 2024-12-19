@@ -60,7 +60,7 @@ export const Sidebar = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ 
+      await signOut({
         redirect: true,
         callbackUrl: '/'
       });
@@ -118,7 +118,19 @@ export const Sidebar = () => {
           mode="inline"
           items={items}
         />
-        {renderAuthButton()}
+
+        <Button
+          className="mb-2"
+          icon={session ? <LogoutOutlined /> : <LoginOutlined />}
+          onClick={session ? handleSignOut : handleSignIn}
+          loading={status === "loading"}
+          type="primary"
+          block
+          variant="outlined"
+          color="primary"
+        >
+          {!collapsed && (session ? "Sign out" : "Sign in")}
+        </Button>
       </div>
     </Sider>
   );
