@@ -1,12 +1,28 @@
-// auth.ts
+// src/auth.ts
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/utils/prisma";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name?: string | null;
+      image?: string | null;
+      credits: number;
+      lastLogin: Date | null;
+    };
+  }
+}
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("Missing Google OAuth Credentials");
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const authOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -21,37 +37,74 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/login", // Specify your custom login page
-    signOut: "/logout", // Optional: specify custom logout page
-    error: "/auth/error", // Optional: custom error page
+    signIn: "/auth/login",
+    error: "/auth/error",
   },
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      // Handle relative URLs
-      if (url.startsWith("/")) {
-        return `${baseUrl}${url}`;
-      }
-      // Allow redirects to the same origin
-      else if (new URL(url).origin === baseUrl) {
-        return url;
-      }
-      // Default fallback
+    redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
-    async session({ session, token }) {
-      // Add additional session properties if needed
+
+    async session({ session, user }) {
+      if (session?.user) {
+        session.user.id = user.id;
+
+        const userData = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: {
+            credits: true,
+            lastLogin: true,
+          },
+        });
+
+        session.user.credits = userData?.credits ?? 0;
+        session.user.lastLogin = userData?.lastLogin ?? null;
+      }
       return session;
     },
+
     async jwt({ token, user, account }) {
-      // Initial sign in
       if (account && user) {
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLogin: new Date(),
+            },
+          });
+        } catch (error) {
+          console.error("Error updating last login:", error);
+        }
+
         return {
           ...token,
           accessToken: account.access_token,
-          // Add any additional token properties you need
+          userId: user.id,
         };
       }
       return token;
     },
   },
-});
+  events: {
+    createUser: async ({ user }) => {
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            credits: 10,
+            lastLogin: new Date(),
+          },
+        });
+      } catch (error) {
+        console.error("Error initializing new user:", error);
+      }
+    },
+  },
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth(authOptions);
+
+// Add a default export of the config
+export default authOptions;
