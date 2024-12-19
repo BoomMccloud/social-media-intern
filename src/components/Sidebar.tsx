@@ -70,40 +70,40 @@ export const Sidebar = () => {
     }
   };
 
-  const renderAuthButton = () => {
-    if (status === "loading") {
-      return (
-        <button 
-          disabled
-          className="mb-2 w-full py-2 px-4 bg-gray-600 text-white rounded flex items-center justify-center gap-2 cursor-not-allowed"
-        >
-          Loading...
-        </button>
-      );
-    }
+  // const renderAuthButton = () => {
+  //   if (status === "loading") {
+  //     return (
+  //       <button 
+  //         disabled
+  //         className="mb-2 w-full py-2 px-4 bg-gray-600 text-white rounded flex items-center justify-center gap-2 cursor-not-allowed"
+  //       >
+  //         Loading...
+  //       </button>
+  //     );
+  //   }
 
-    if (session) {
-      return (
-        <button
-          onClick={handleSignOut}
-          className="mb-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded flex items-center justify-center gap-2"
-        >
-          <LogoutOutlined />
-          {!collapsed && "Sign out"}
-        </button>
-      );
-    }
+  //   if (session) {
+  //     return (
+  //       <button
+  //         onClick={handleSignOut}
+  //         className="mb-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded flex items-center justify-center gap-2"
+  //       >
+  //         <LogoutOutlined />
+  //         {!collapsed && "Sign out"}
+  //       </button>
+  //     );
+  //   }
 
-    return (
-      <button
-        onClick={handleSignIn}
-        className="mb-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-2"
-      >
-        <LoginOutlined />
-        {!collapsed && "Sign in"}
-      </button>
-    );
-  };
+  //   return (
+  //     <button
+  //       onClick={handleSignIn}
+  //       className="mb-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-2"
+  //     >
+  //       <LoginOutlined />
+  //       {!collapsed && "Sign in"}
+  //     </button>
+  //   );
+  // };
 
   return (
     <Sider
