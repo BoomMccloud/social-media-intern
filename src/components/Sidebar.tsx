@@ -1,7 +1,7 @@
 // src/components/Sidebar.tsx
 "use client";
 
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Button } from "antd";
 import type { MenuProps } from "antd";
 import {
   DesktopOutlined,
@@ -118,7 +118,6 @@ export const Sidebar = () => {
           mode="inline"
           items={items}
         />
-
         <Button
           className="mb-2"
           icon={session ? <LogoutOutlined /> : <LoginOutlined />}
