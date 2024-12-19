@@ -17,7 +17,7 @@
     "@nlux/themes": "^2.17.1",
     "@openrouter/ai-sdk-provider": "^0.0.6",
     "ai": "^4.0.16",
-    "antd": "^5.22.4",
+    "antd": "^5.22.5",
     "dotenv": "^16.4.7",
     "google-auth-library": "^9.15.0",
     "next": "15.0.4",
