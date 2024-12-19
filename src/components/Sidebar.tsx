@@ -1,8 +1,7 @@
 // src/components/Sidebar.tsx
-
 "use client";
 
-import { Layout, Menu, Button } from "antd";
+import { Layout, Menu } from "antd";
 import type { MenuProps } from "antd";
 import {
   DesktopOutlined,
@@ -14,11 +13,10 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
-// import { redirect } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const { Sider } = Layout;
-
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -52,10 +50,8 @@ const items: MenuItem[] = [
 ];
 
 const siderStyle: React.CSSProperties = {
-  // overflow: "auto",
   height: "100vh",
   position: "sticky",
-  // insetInlineStart: 0,
   top: 0,
   bottom: 0,
   scrollbarWidth: "thin",
@@ -65,61 +61,56 @@ const siderStyle: React.CSSProperties = {
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { data: session, status } = useSession();
+  const router = useRouter();
 
-  const handleSignIn = async () => {
-    try {
-      // Get the callback URL from the URL parameters if it exists
-      const searchParams = new URLSearchParams(window.location.search);
-      const callbackUrl = searchParams.get('callbackUrl') || window.location.href;
-  
-      void signIn('google', { 
-        prompt: "select_account",
-        callbackUrl: callbackUrl,
-        redirect: true,
-      });
-    } catch (error) {
-      console.error('Sign in error:', error);
-    }
+  const handleSignIn = () => {
+    router.push('/auth/login');
   };
 
   const handleSignOut = async () => {
     try {
       await signOut({ 
         redirect: true,
-        callbackUrl: '/'  // This will always redirect to home page
+        callbackUrl: '/'
       });
     } catch (error) {
       console.error('Sign out error:', error);
-      // Fallback redirect if the signOut fails
       window.location.href = '/';
     }
   };
 
   const renderAuthButton = () => {
     if (status === "loading") {
-      return <Button className="mb-2 w-full" loading>Loading...</Button>;
+      return (
+        <button 
+          disabled
+          className="mb-2 w-full py-2 px-4 bg-gray-600 text-white rounded flex items-center justify-center gap-2 cursor-not-allowed"
+        >
+          Loading...
+        </button>
+      );
     }
 
     if (session) {
       return (
-        <Button
-          className="mb-2 w-full"
-          icon={<LogoutOutlined />}
+        <button
           onClick={handleSignOut}
+          className="mb-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded flex items-center justify-center gap-2"
         >
+          <LogoutOutlined />
           {!collapsed && "Sign out"}
-        </Button>
+        </button>
       );
     }
 
     return (
-      <Button
-        className="mb-2 w-full"
-        icon={<LoginOutlined />}
+      <button
         onClick={handleSignIn}
+        className="mb-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-2"
       >
+        <LoginOutlined />
         {!collapsed && "Sign in"}
-      </Button>
+      </button>
     );
   };
 
