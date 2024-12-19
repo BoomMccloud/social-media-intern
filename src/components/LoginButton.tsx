@@ -2,23 +2,30 @@
 'use client'
 
 import { signIn } from "next-auth/react"
-import { useState } from "react"
+import { useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 
-export default function LoginButton() {
-  const [isLoading, setIsLoading] = useState(false)
-
+// Separate component that uses useSearchParams
+function LoginButtonContent() {
+  const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  
   const handleSignIn = async () => {
     try {
-      setIsLoading(true)
-      await signIn("google", { 
-        callbackUrl: "/dashboard",
-      })
+      setIsLoading(true);
+      const callbackUrl = searchParams.get("callbackUrl") || "/";
+      console.log('Login attempted with callback URL:', callbackUrl);
+      
+      await signIn("google", {
+        callbackUrl: callbackUrl,
+        redirect: true,
+      });
     } catch (error) {
-      console.error("Sign in error:", error)
+      console.error("Sign in error:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <button 
@@ -52,5 +59,32 @@ export default function LoginButton() {
         </>
       )}
     </button>
-  )
+  );
+}
+
+// Loading fallback that matches the button styling
+function LoadingButton() {
+  return (
+    <button 
+      disabled
+      className={`
+        w-full px-4 py-2 
+        bg-blue-600 text-white 
+        rounded-md 
+        opacity-50 cursor-not-allowed
+        flex items-center justify-center gap-2
+      `}
+    >
+      <span className="inline-block">Loading...</span>
+    </button>
+  );
+}
+
+// Main component with Suspense wrapper
+export default function LoginButton() {
+  return (
+    <Suspense fallback={<LoadingButton />}>
+      <LoginButtonContent />
+    </Suspense>
+  );
 }

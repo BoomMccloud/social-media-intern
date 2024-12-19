@@ -1,5 +1,5 @@
 // middleware.ts
-import { auth } from "./auth";
+import { auth } from "@/auth";
 // import { NextResponse } from "next/server";
 
 // Export auth middleware directly

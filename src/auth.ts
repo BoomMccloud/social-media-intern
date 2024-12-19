@@ -20,14 +20,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  pages: {
+    signIn: "/login", // Specify your custom login page
+    signOut: "/logout", // Optional: specify custom logout page
+    error: "/auth/error", // Optional: custom error page
+  },
   callbacks: {
     async redirect({ url, baseUrl }) {
+      // Handle relative URLs
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
-      } else if (new URL(url).origin === baseUrl) {
+      }
+      // Allow redirects to the same origin
+      else if (new URL(url).origin === baseUrl) {
         return url;
       }
+      // Default fallback
       return baseUrl;
+    },
+    async session({ session, token }) {
+      // Add additional session properties if needed
+      return session;
+    },
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (account && user) {
+        return {
+          ...token,
+          accessToken: account.access_token,
+          // Add any additional token properties you need
+        };
+      }
+      return token;
     },
   },
 });

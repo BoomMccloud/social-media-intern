@@ -37,17 +37,33 @@ function ChatComponent() {
   const [model, setModel] = useState<ModelConfig | null>(null);
   const [modelLoading, setModelLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { status, data: session } = useSession();
+  const { status, data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // Get the full current URL including query parameters
+      const currentUrl = window.location.pathname + window.location.search;
+      router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
+    },
+  });
 
   useEffect(() => {
+    // Validate configId exists
+    if (!configId) {
+      setError('No model selected');
+      return;
+    }
+
     async function fetchModel() {
       setModelLoading(true);
       try {
-        const response = await fetch(`/api/model?type=chat${configId ? `&configId=${configId}` : ''}`);
+        const response = await fetch(`/api/model?type=chat&configId=${configId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch model data');
         }
         const data = await response.json();
+        if (!data) {
+          throw new Error('Model not found');
+        }
         setModel(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load model');
@@ -59,24 +75,13 @@ function ChatComponent() {
     if (status === "authenticated") {
       fetchModel();
     }
-  }, [configId, status]);
+  }, [configId, status, router]);
 
   // Handle authentication loading
   if (status === "loading") {
     return (
       <div className="flex justify-center w-screen h-screen items-center">
-        <div className="text-xl">Checking authentication...</div>
-      </div>
-    );
-  }
-
-  // Redirect to login if not authenticated
-  if (status === "unauthenticated") {
-    const currentPath = window.location.pathname + window.location.search;
-    router.push(`/api/auth/signin?callbackUrl=${encodeURIComponent(currentPath)}`);
-    return (
-      <div className="flex justify-center w-screen h-screen items-center">
-        <div className="text-xl">Redirecting to login...</div>
+        <div className="text-xl">Verifying your access...</div>
       </div>
     );
   }
