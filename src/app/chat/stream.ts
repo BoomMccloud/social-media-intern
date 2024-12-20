@@ -1,3 +1,4 @@
+// src/app/chat/stream.ts
 import { ChatMessage } from "@/types/chat";
 
 interface StreamObserver {
@@ -10,26 +11,44 @@ interface StreamingAdapter {
   streamText: (text: string, observer: StreamObserver) => Promise<void>;
 }
 
-export const invalidateModelConfig = () => {
-  // No-op as model selection is handled server-side
+const processSSEChunk = (chunk: string, observer: StreamObserver) => {
+  const lines = chunk.split("\n");
+  for (const line of lines) {
+    if (!line.startsWith("data: ")) continue;
+
+    const data = line.slice(6);
+    if (data === "[DONE]") return true;
+
+    try {
+      const message: ChatMessage = JSON.parse(data);
+      observer.next(message.content);
+    } catch (e) {
+      console.warn("Failed to parse SSE message:", e);
+    }
+  }
+  return false;
 };
 
 export const createStreamingAdapter = (
   configId?: string | null
 ): StreamingAdapter => ({
-  streamText: async (text, observer) => {
+  streamText: async (text: string, observer: StreamObserver) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         body: JSON.stringify({
           messages: [{ role: "user", content: text }],
-          configId: configId,
+          configId,
         }),
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
       });
 
       if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const reader = response.body?.getReader();
@@ -42,24 +61,21 @@ export const createStreamingAdapter = (
         if (done) break;
 
         const chunk = textDecoder.decode(value);
-        for (const line of chunk.split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-
-          const data = line.slice(6);
-          if (data === "[DONE]") break;
-
-          try {
-            const message: ChatMessage = JSON.parse(data);
-            observer.next(message.content);
-          } catch (e) {
-            console.error("Failed to parse SSE message:", e);
-          }
-        }
+        const isDone = processSSEChunk(chunk, observer);
+        if (isDone) break;
       }
 
       observer.complete();
     } catch (error) {
-      observer.error(error instanceof Error ? error : new Error(String(error)));
+      if (error instanceof Error) {
+        observer.error(
+          error.name === "AbortError" ? new Error("Request timeout") : error
+        );
+      } else {
+        observer.error(new Error(String(error)));
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
   },
 });
