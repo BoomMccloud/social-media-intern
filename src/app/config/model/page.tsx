@@ -6,7 +6,7 @@ import { redirect } from "next/navigation"
 import { useState, useEffect } from 'react';
 import { ModelConfig } from '@/types/chat';
 import { DEFAULT_MODELS } from '@/config/default-models';
-import { invalidateModelConfig } from '@/app/chat/stream';
+// import { invalidateModelConfig } from '@/app/chat/stream';
 
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
@@ -130,9 +130,9 @@ export default function TestPage() {
       setSaveStatus('success');
       
       // Only invalidate if it's forced or if we're saving the active model
-      if (forceRefresh || selectedModel?.isActive) {
-        invalidateModelConfig();
-      }
+      // if (forceRefresh || selectedModel?.isActive) {
+      //   invalidateModelConfig();
+      // }
       
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
