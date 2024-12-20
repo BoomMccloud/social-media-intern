@@ -3,15 +3,7 @@
 
 import { Layout, Menu, Button } from "antd";
 import type { MenuProps } from "antd";
-import {
-  DesktopOutlined,
-  FileOutlined,
-  PieChartOutlined,
-  // TeamOutlined,
-  // UserOutlined,
-  LoginOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
+import { HomeOutlined, LoginOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -34,11 +26,7 @@ function getItem(
   } as MenuItem;
 }
 
-const items: MenuItem[] = [
-  getItem("Option 1", "1", <PieChartOutlined />),
-  getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("Files", "9", <FileOutlined />),
-];
+const items: MenuItem[] = [getItem("Home", "/", <HomeOutlined />)];
 
 // const siderStyle: React.CSSProperties = {
 //   height: "100vh",
@@ -55,25 +43,25 @@ export const Sidebar = () => {
   const router = useRouter();
 
   const handleSignIn = () => {
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   const handleSignOut = async () => {
     try {
       await signOut({
         redirect: true,
-        callbackUrl: '/'
+        callbackUrl: "/",
       });
     } catch (error) {
       console.error("Sign out error:", error);
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
 
   // const renderAuthButton = () => {
   //   if (status === "loading") {
   //     return (
-  //       <button 
+  //       <button
   //         disabled
   //         className="mb-2 w-full py-2 px-4 bg-gray-600 text-white rounded flex items-center justify-center gap-2 cursor-not-allowed"
   //       >
@@ -110,13 +98,18 @@ export const Sidebar = () => {
       collapsible
       collapsed={collapsed}
       onCollapse={(value) => setCollapsed(value)}
+      breakpoint="md"
+      zeroWidthTriggerStyle={{ background: "red" }}
     >
       <div className="flex flex-col justify-between p-2 h-full">
         <Menu
           theme="dark"
-          defaultSelectedKeys={["1"]}
+          defaultSelectedKeys={["home"]}
           mode="inline"
           items={items}
+          onClick={({ key }: { key: string }) => {
+            router.push(key);
+          }}
         />
         <Button
           className="mb-2"
