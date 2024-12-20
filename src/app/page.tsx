@@ -98,7 +98,7 @@ export default function Home() {
                   src={model.profilePicture}
                   className="w-full h-[250px] object-contain"
                 />
-                <div className="p-4 absolute bottom-0 left-0 right-0">
+                <div className="px-3 py-2 absolute bottom-0 left-0 right-0 shadow-card">
                   <h3 className="font-semibold text-gray-800 mb-1">
                     {model.name}
                   </h3>
