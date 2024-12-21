@@ -166,8 +166,9 @@ function ChatComponent() {
       </Splitter.Panel>
       <Splitter.Panel>
         <div className="flex justify-center h-screen items-center p-4">
-          {!hasConfigId && <div>Select chat</div>}
-          {status === "loading" ? (
+          {!hasConfigId ? (
+            <div>Select chat</div>
+          ) : status === "loading" ? (
             <div
               className="flex flex-col items-stretch w-full gap-2"
               style={{ maxWidth: 600 }}
