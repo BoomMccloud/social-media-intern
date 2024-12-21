@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { ChatService } from "@/lib/chat-service";
 import { getModelConfigs } from "@/lib/config";
 import { DEFAULT_MODELS } from "@/config/default-models";
-import { ModelConfig, Message } from "@/types/chat";
+import { ModelConfig } from "@/types/chat";
 
 const selectModel = async (
   configId: string | undefined
@@ -45,13 +45,6 @@ const createResponseStream = async (textStream: AsyncIterable<string>) => {
   });
 };
 
-const formatMessagesForAPI = (messages: any[]): Message[] => {
-  return messages.map((msg) => ({
-    role: msg.role as "user" | "assistant" | "system",
-    content: msg.content,
-  }));
-};
-
 export async function POST(req: Request) {
   try {
     const { messages, configId } = await req.json();
@@ -79,18 +72,11 @@ export async function POST(req: Request) {
     }
 
     const chatService = ChatService.getInstance(process.env.OPENROUTER_API_KEY);
-    console.log("Original messages:", messages);
-    const formattedMessages = formatMessagesForAPI(messages);
-    console.log("Formatted messages:", formattedMessages);
-    // Let's use streamResponse for now as we know it works
-    // const { textStream } = await chatService.streamResponse(
-    //   formattedMessages[formattedMessages.length - 1].content,
-    //   selectedModel
-    // );
-    const { textStream } = await chatService.continueConversation(
-      formattedMessages,
+    const { textStream } = await chatService.streamResponse(
+      messages[messages.length - 1].content,
       selectedModel
     );
+
     const stream = await createResponseStream(textStream);
 
     return new Response(stream, {

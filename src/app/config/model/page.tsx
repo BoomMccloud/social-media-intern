@@ -74,6 +74,7 @@ export default function TestPage() {
       configId: `config-${crypto.randomUUID()}`,
       modelId: '',
       name: 'New Model',
+      description: 'My name is Bob, your AI assistant.',
       systemPrompt: 'You are a helpful AI assistant.',
       temperature: 0.7,
       maxTokens: 1000,

@@ -4,10 +4,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { createStreamingAdapter } from "@/app/chat/stream";
 import { AiChat } from "@nlux/react";
 import "@nlux/themes/nova.css";
-import { Suspense, useEffect } from "react";
-import { ModelConfig } from "@/types/chat";
+import { Suspense, useEffect, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useChatModel } from "@/hooks/useChatModel";
+import { useChatStore } from "@/store/chat-store";
+import { ChatMessage } from "@/types/chat";
 
 const LoadingState = () => (
   <div className="flex justify-center w-screen h-screen items-center">
@@ -40,6 +41,55 @@ function ChatComponent() {
   });
 
   const { model, loading, error } = useChatModel(configId, status === "authenticated");
+  const { addMessage, getMessages } = useChatStore();
+
+  const messages = useMemo(() => 
+    configId ? getMessages(configId) : [],
+    [configId, getMessages]
+  );
+
+  const customStreamingAdapter = useCallback((configId: string | null) => {
+    const baseAdapter = createStreamingAdapter(configId);
+    
+    return {
+      streamText: async (text: string, observer: any) => {
+        const userMessage: ChatMessage = {
+          id: crypto.randomUUID(),
+          role: 'user',
+          content: text,
+          createdAt: new Date()
+        };
+
+        if (configId) {
+          addMessage(configId, userMessage);
+        }
+
+        let assistantResponse = '';
+
+        return baseAdapter.streamText([...messages, userMessage], {
+          next: (content: string) => {
+            assistantResponse += content;
+            observer.next(content);
+          },
+          error: (error: Error) => {
+            observer.error(error);
+          },
+          complete: () => {
+            const assistantMessage: ChatMessage = {
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: assistantResponse,
+              createdAt: new Date()
+            };
+            if (configId) {
+              addMessage(configId, assistantMessage);
+            }
+            observer.complete();
+          }
+        });
+      }
+    };
+  }, [addMessage, messages]);
 
   if (status === "loading") {
     return <LoadingState />;
@@ -57,7 +107,7 @@ function ChatComponent() {
     <div className="flex justify-center w-screen h-screen items-center">
       <AiChat
         displayOptions={{ width: "60%", height: "50%" }}
-        adapter={createStreamingAdapter(configId)}
+        adapter={customStreamingAdapter(configId)}
         personaOptions={{
           assistant: {
             name: model.name,

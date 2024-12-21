@@ -4,6 +4,7 @@ import "./globals.css";
 import { Layout, ConfigProvider, theme } from "antd";
 import { Sidebar } from "../components/Sidebar";
 import Providers from "./Providers";
+import { StoreInitializer } from '@/components/StoreInitializer';
 
 const { Content } = Layout;
 
@@ -29,6 +30,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <StoreInitializer />
           <ConfigProvider
             theme={{
               token: {
