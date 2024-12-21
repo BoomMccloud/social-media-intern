@@ -11,6 +11,7 @@ interface UiModelData {
   description: string;
   isActive: boolean;
   profilePicture: string;
+  avatar: string;
 }
 
 interface ChatModelData {
@@ -46,6 +47,7 @@ export async function GET(req: Request) {
         description: model.systemPrompt.split("\n")[0], // Get first line of system prompt as description
         isActive: model.isActive,
         profilePicture: model.profilePicture,
+        avatar: model.avatar,
       }));
 
       return NextResponse.json(pageData);

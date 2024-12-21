@@ -4,17 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-interface ModelCard {
+export interface Model {
   configId: string;
   name: string;
   description: string;
   isActive: boolean;
   profilePicture: string;
   avatar: string;
+  systemPrompt: string;
 }
 
 export default function Home() {
-  const [models, setModels] = useState<ModelCard[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
