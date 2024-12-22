@@ -229,9 +229,9 @@ function ChatComponent() {
               <Skeleton.Node style={{ height: 16, width: "100%" }} />
             </div>
           ) : model ? (
-            <div style={{ height: 500, maxWidth: 600 }}>
+            <div style={{ height: 500, maxWidth: 600, width: "100%" }}>
               <AiChat
-                displayOptions={{ width: "60%", height: "50%" }}
+                displayOptions={{ width: "100%", height: "100%" }}
                 adapter={customStreamingAdapter(configId)}
                 personaOptions={{
                   assistant: {
