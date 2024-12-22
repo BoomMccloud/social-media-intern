@@ -237,7 +237,7 @@ function ChatComponent() {
                   assistant: {
                     name: model.name,
                     avatar: model.avatar,
-                    tagline: model.systemPrompt.split("\n")[0],
+                    tagline: model.description,
                   },
                   user: {
                     name: session?.user?.name || "User",
