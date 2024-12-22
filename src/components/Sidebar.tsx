@@ -41,7 +41,7 @@ export const Sidebar = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  console.log(pathname);
+
   const handleSignIn = () => {
     router.push("/auth/login");
   };
@@ -63,7 +63,7 @@ export const Sidebar = () => {
       collapsible
       collapsed={collapsed}
       onCollapse={(value) => setCollapsed(value)}
-      breakpoint="md"
+      breakpoint="lg"
       zeroWidthTriggerStyle={{ background: "red" }}
     >
       <div className="flex flex-col justify-between p-2 h-full">
