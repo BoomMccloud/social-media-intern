@@ -50,7 +50,7 @@ function ChatComponent() {
   );
 
   // Debug logging to verify messages state
-  console.log('Current messages in chat:', messages);
+  // console.log('Current messages in chat:', messages);
 
   const handleClearChat = useCallback(() => {
     if (configId) {

@@ -22,7 +22,7 @@ const processSSEChunk = (chunk: string, observer: StreamObserver) => {
 
     const data = line.slice(6);
     if (data === "[DONE]") {
-      console.log("Stream completed");
+      // console.log("Stream completed");
       return true;
     }
 
@@ -31,7 +31,7 @@ const processSSEChunk = (chunk: string, observer: StreamObserver) => {
       // console.log("Processed message:", message);
       observer.next(message.content);
     } catch (e) {
-      console.warn("Failed to parse SSE message:", e);
+      // console.warn("Failed to parse SSE message:", e);
     }
   }
   return false;
