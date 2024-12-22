@@ -1,5 +1,5 @@
 // src/app/chat/stream.ts
-import { ChatMessage, ChatSession } from "@/types/chat";
+import { ChatMessage } from "@/types/chat";
 
 interface StreamObserver {
   next: (content: string) => void;
