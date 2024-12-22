@@ -4,17 +4,14 @@
 import { Layout, Menu, Button } from "antd";
 import type { MenuProps } from "antd";
 import {
-  DesktopOutlined,
-  FileOutlined,
-  PieChartOutlined,
-  // TeamOutlined,
-  // UserOutlined,
+  HomeOutlined,
   LoginOutlined,
   LogoutOutlined,
+  WechatWorkOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const { Sider } = Layout;
 
@@ -35,88 +32,49 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem("Option 1", "1", <PieChartOutlined />),
-  getItem("Option 2", "2", <DesktopOutlined />),
-  getItem("Files", "9", <FileOutlined />),
+  getItem("Home", "/", <HomeOutlined />),
+  getItem("Chat", "/chat", <WechatWorkOutlined />),
 ];
-
-// const siderStyle: React.CSSProperties = {
-//   height: "100vh",
-//   position: "sticky",
-//   top: 0,
-//   bottom: 0,
-//   scrollbarWidth: "thin",
-//   scrollbarGutter: "stable",
-// };
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { data: session, status } = useSession();
   const router = useRouter();
-
+  const pathname = usePathname();
+  console.log(pathname);
   const handleSignIn = () => {
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   const handleSignOut = async () => {
     try {
       await signOut({
         redirect: true,
-        callbackUrl: '/'
+        callbackUrl: "/",
       });
     } catch (error) {
       console.error("Sign out error:", error);
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
-
-  // const renderAuthButton = () => {
-  //   if (status === "loading") {
-  //     return (
-  //       <button 
-  //         disabled
-  //         className="mb-2 w-full py-2 px-4 bg-gray-600 text-white rounded flex items-center justify-center gap-2 cursor-not-allowed"
-  //       >
-  //         Loading...
-  //       </button>
-  //     );
-  //   }
-
-  //   if (session) {
-  //     return (
-  //       <button
-  //         onClick={handleSignOut}
-  //         className="mb-2 w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded flex items-center justify-center gap-2"
-  //       >
-  //         <LogoutOutlined />
-  //         {!collapsed && "Sign out"}
-  //       </button>
-  //     );
-  //   }
-
-  //   return (
-  //     <button
-  //       onClick={handleSignIn}
-  //       className="mb-2 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-2"
-  //     >
-  //       <LoginOutlined />
-  //       {!collapsed && "Sign in"}
-  //     </button>
-  //   );
-  // };
 
   return (
     <Sider
       collapsible
       collapsed={collapsed}
       onCollapse={(value) => setCollapsed(value)}
+      breakpoint="md"
+      zeroWidthTriggerStyle={{ background: "red" }}
     >
       <div className="flex flex-col justify-between p-2 h-full">
         <Menu
           theme="dark"
-          defaultSelectedKeys={["1"]}
+          defaultSelectedKeys={[pathname]}
           mode="inline"
           items={items}
+          onClick={({ key }: { key: string }) => {
+            router.push(key);
+          }}
         />
         <Button
           className="mb-2"

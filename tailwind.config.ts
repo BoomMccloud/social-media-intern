@@ -7,6 +7,12 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        primary: {
+          DEFAULT: "#F8BBD0",
+        },
+      },
+      boxShadow: {
+        card: "inset 0px -20px 24px -3px rgba(0,0,0,0.1)",
       },
     },
   },
