@@ -6,7 +6,7 @@
     "temperature": 0.7,
     "maxTokens": 1000,
     "isActive": false,
-    "modelId": "gryphe/mythomax-l2-13b",
+    "modelId": "neversleep/llama-3-lumimaid-8bh",
     "profilePicture": "/images/inara/profile.jpg",
     "avatar": "/images/inara/avatar.png"
   },

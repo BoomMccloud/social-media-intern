@@ -1,3 +1,4 @@
+// src/app/chat/stream.ts
 import { ChatMessage } from "@/types/chat";
 
 interface StreamObserver {
@@ -7,59 +8,103 @@ interface StreamObserver {
 }
 
 interface StreamingAdapter {
-  streamText: (text: string, observer: StreamObserver) => Promise<void>;
+  streamText: (
+    messages: ChatMessage[],
+    observer: StreamObserver
+  ) => Promise<void>;
 }
 
-export const invalidateModelConfig = () => {
-  // No-op as model selection is handled server-side
+const processSSEChunk = (chunk: string, observer: StreamObserver) => {
+  // console.log("Processing SSE chunk:", chunk);
+  const lines = chunk.split("\n");
+  for (const line of lines) {
+    if (!line.startsWith("data: ")) continue;
+
+    const data = line.slice(6);
+    if (data === "[DONE]") {
+      // console.log("Stream completed");
+      return true;
+    }
+
+    try {
+      const message: ChatMessage = JSON.parse(data);
+      // console.log("Processed message:", message);
+      observer.next(message.content);
+    } catch (e) {
+      // console.warn("Failed to parse SSE message:", e);
+    }
+  }
+  return false;
+};
+
+const formatMessagesForAPI = (messages: ChatMessage[]): ChatMessage[] => {
+  return messages.map((msg) => ({
+    role: msg.role,
+    content: msg.content,
+    id: msg.id,
+    createdAt: msg.createdAt,
+  }));
 };
 
 export const createStreamingAdapter = (
   configId?: string | null
-): StreamingAdapter => ({
-  streamText: async (text, observer) => {
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({
-          messages: [{ role: "user", content: text }],
-          configId: configId,
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
+): StreamingAdapter => {
+  console.log("Creating streaming adapter with configId:", configId);
 
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
+  return {
+    streamText: async (messages: ChatMessage[], observer: StreamObserver) => {
+      console.log("Stream text called with messages:", messages);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          body: JSON.stringify({
+            messages,
+            configId,
+          }),
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+        });
 
-      const textDecoder = new TextDecoder();
+        console.log("API response status:", response.status);
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = textDecoder.decode(value);
-        for (const line of chunk.split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-
-          const data = line.slice(6);
-          if (data === "[DONE]") break;
-
-          try {
-            const message: ChatMessage = JSON.parse(data);
-            observer.next(message.content);
-          } catch (e) {
-            console.error("Failed to parse SSE message:", e);
-          }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      }
 
-      observer.complete();
-    } catch (error) {
-      observer.error(error instanceof Error ? error : new Error(String(error)));
-    }
-  },
-});
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response body");
+
+        const textDecoder = new TextDecoder();
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            console.log("Reader completed");
+            break;
+          }
+
+          const chunk = textDecoder.decode(value);
+          // console.log("Received chunk:", chunk);
+          const isDone = processSSEChunk(chunk, observer);
+          if (isDone) break;
+        }
+
+        observer.complete();
+      } catch (error) {
+        console.error("Stream error:", error);
+        if (error instanceof Error) {
+          observer.error(
+            error.name === "AbortError" ? new Error("Request timeout") : error
+          );
+        } else {
+          observer.error(new Error(String(error)));
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+  };
+};

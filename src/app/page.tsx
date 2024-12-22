@@ -22,23 +22,17 @@ export default function Home() {
   const { status } = useSession();
 
   useEffect(() => {
-    console.log("Component mounted");
-
     async function fetchModels() {
-      console.log("Fetching models...");
       try {
         const response = await fetch("/api/model?type=page");
-        console.log("API Response:", response);
 
         if (!response.ok) {
           throw new Error("Failed to fetch models");
         }
         const data = await response.json();
-        console.log("Fetched data:", data);
 
         setModels(data);
       } catch (err) {
-        console.error("Fetch error:", err);
         setError(err instanceof Error ? err.message : "Failed to load models");
       } finally {
         setLoading(false);
@@ -61,10 +55,7 @@ export default function Home() {
     }
   };
 
-  console.log("Current state:", { loading, error, modelCount: models.length });
-
   if (loading) {
-    console.log("Rendering loading state");
     return (
       <div className="p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] flex justify-center items-center min-h-screen">
         <div className="text-xl">Loading available models...</div>
@@ -73,15 +64,12 @@ export default function Home() {
   }
 
   if (error) {
-    console.log("Rendering error state:", error);
     return (
       <div className="p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] flex justify-center items-center min-h-screen">
         <div className="text-xl text-red-500">Error: {error}</div>
       </div>
     );
   }
-
-  console.log("Rendering models:", models);
 
   return (
     <div className="p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">

@@ -1,19 +1,30 @@
 // src/types/chat.ts
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
+export interface Message {
+  role: "user" | "assistant" | "system";
   content: string;
+}
+
+export interface ChatMessage extends Message {
+  id: string;
   createdAt: Date;
 }
 
 export interface ModelConfig {
-  configId: string; // Unique identifier for the configuration
-  modelId: string; // The actual model ID (e.g., meta-llama/llama-3.2-1b-instruct)
+  configId: string;
+  modelId: string;
   name: string;
   systemPrompt: string;
-  temperature: number;
-  maxTokens: number;
+  temperature?: number;
+  maxTokens?: number;
   isActive: boolean;
   profilePicture: string;
   avatar: string;
+  description: string;
+}
+
+export interface ChatSession {
+  id: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
 }

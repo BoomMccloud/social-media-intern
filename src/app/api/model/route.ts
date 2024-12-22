@@ -43,8 +43,8 @@ export async function GET(req: Request) {
       // For the main page, return minimal data needed for cards
       const pageData: UiModelData[] = models.map((model) => ({
         configId: model.configId,
-        name: model.name,
-        description: model.systemPrompt.split("\n")[0], // Get first line of system prompt as description
+        name: model.modelId,
+        description: "placeholder",
         isActive: model.isActive,
         profilePicture: model.profilePicture,
         avatar: model.avatar,
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
       // For the chat page, return data needed for the chat interface
       const chatData: ChatModelData[] = models.map((model) => ({
         configId: model.configId,
-        name: model.name,
+        name: model.modelId,
         systemPrompt: model.systemPrompt,
         isActive: model.isActive,
         modelId: model.modelId,
