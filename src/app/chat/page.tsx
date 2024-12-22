@@ -131,7 +131,7 @@ function ChatComponent() {
       {(md || showOnlyChat) && (
         <Splitter.Panel>
           {showOnlyChat && (
-            <div className="p-8 absolute">
+            <div className="py-4 px-2 md:p-8 absolute">
               <Breadcrumb
                 items={[
                   {

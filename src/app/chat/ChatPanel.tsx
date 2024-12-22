@@ -114,7 +114,7 @@ export const ChatPanel = () => {
   ); // Added getMessages to dependencies
 
   return (
-    <div className="flex justify-center h-screen items-center p-4">
+    <div className="flex justify-center h-screen items-center p-2 md:p-4">
       {!hasConfigId ? (
         <div>Select chat</div>
       ) : status === "loading" ? (

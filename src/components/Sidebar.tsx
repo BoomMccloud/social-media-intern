@@ -65,6 +65,7 @@ export const Sidebar = () => {
       onCollapse={(value) => setCollapsed(value)}
       breakpoint="lg"
       zeroWidthTriggerStyle={{ background: "red" }}
+      collapsedWidth={70}
     >
       <div className="flex flex-col justify-between p-2 h-full">
         <Menu
