@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { createStreamingAdapter } from "@/app/chat/stream";
 import { AiChat } from "@nlux/react";
 import "@nlux/themes/nova.css";
-import { Suspense, useEffect, useMemo, useCallback } from "react";
+import { Suspense, useMemo, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useChatModel } from "@/hooks/useChatModel";
 import { useChatStore } from "@/store/chat-store";
@@ -41,18 +41,33 @@ function ChatComponent() {
   });
 
   const { model, loading, error } = useChatModel(configId, status === "authenticated");
-  const { addMessage, getMessages } = useChatStore();
+  const { addMessage, getMessages, clearSession } = useChatStore();
 
+  // Get existing messages for this chat
   const messages = useMemo(() => 
     configId ? getMessages(configId) : [],
     [configId, getMessages]
   );
 
+  // Debug logging to verify messages state
+  console.log('Current messages in chat:', messages);
+
+  const handleClearChat = useCallback(() => {
+    if (configId) {
+      clearSession(configId);
+      window.location.reload();
+    }
+  }, [configId, clearSession]);
+
   const customStreamingAdapter = useCallback((configId: string | null) => {
+    // Create a new base adapter for each chat session
     const baseAdapter = createStreamingAdapter(configId);
     
     return {
       streamText: async (text: string, observer: any) => {
+        // Get the latest messages at the time of the request
+        const currentMessages = configId ? getMessages(configId) : [];
+        
         const userMessage: ChatMessage = {
           id: crypto.randomUUID(),
           role: 'user',
@@ -66,7 +81,8 @@ function ChatComponent() {
 
         let assistantResponse = '';
 
-        return baseAdapter.streamText([...messages, userMessage], {
+        // Pass both existing messages and new user message to the API
+        return baseAdapter.streamText([...currentMessages, userMessage], {
           next: (content: string) => {
             assistantResponse += content;
             observer.next(content);
@@ -89,7 +105,7 @@ function ChatComponent() {
         });
       }
     };
-  }, [addMessage, messages]);
+  }, [configId, getMessages, addMessage]); // Added getMessages to dependencies
 
   if (status === "loading") {
     return <LoadingState />;
@@ -104,7 +120,7 @@ function ChatComponent() {
   }
 
   return (
-    <div className="flex justify-center w-screen h-screen items-center">
+    <div className="flex flex-col justify-center w-screen h-screen items-center relative">
       <AiChat
         displayOptions={{ width: "60%", height: "50%" }}
         adapter={customStreamingAdapter(configId)}
@@ -120,6 +136,12 @@ function ChatComponent() {
           },
         }}
       />
+      <button
+        onClick={handleClearChat}
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+      >
+        Clear Chat History
+      </button>
     </div>
   );
 }
