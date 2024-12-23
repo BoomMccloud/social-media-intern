@@ -19,7 +19,7 @@ export function useChatModel(
       );
       return data;
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!configId,
   });
 
   return { model, loading, error };
