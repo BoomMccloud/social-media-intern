@@ -4,22 +4,15 @@ import path from "path";
 import { ModelConfig } from "@/types/chat";
 
 // Define types for our model data
-
-interface UiModelData {
-  configId: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  profilePicture: string;
-}
-
-interface ChatModelData {
+export interface ModelData {
   configId: string;
   name: string;
   systemPrompt: string;
+  description: string;
   isActive: boolean;
   modelId: string;
   profilePicture: string;
+  tags: string[];
 }
 
 export async function GET(req: Request) {
@@ -40,33 +33,17 @@ export async function GET(req: Request) {
     // Transform data based on the request type
     if (type === "page") {
       // For the main page, return minimal data needed for cards
-      const pageData: UiModelData[] = models.map((model) => ({
-        configId: model.configId,
-        name: model.name,
-        description: model.description,
-        isActive: model.isActive,
-        profilePicture: model.profilePicture,
-      }));
 
-      return NextResponse.json(pageData);
+      return NextResponse.json(models);
     } else if (type === "chat") {
-      // For the chat page, return data needed for the chat interface
-      const chatData: ChatModelData[] = models.map((model) => ({
-        configId: model.configId,
-        name: model.name,
-        description: model.description,
-        systemPrompt: model.systemPrompt,
-        isActive: model.isActive,
-        modelId: model.modelId,
-        profilePicture: model.profilePicture,
-      }));
-
       // If configId is provided, return only that model
       const configId = searchParams.get("configId");
+
       if (configId) {
-        const selectedModel = chatData.find(
+        const selectedModel = models.find(
           (model) => model.configId === configId
         );
+
         if (!selectedModel) {
           return NextResponse.json(
             { error: "Model not found" },
@@ -75,8 +52,6 @@ export async function GET(req: Request) {
         }
         return NextResponse.json(selectedModel);
       }
-
-      return NextResponse.json(chatData);
     }
 
     return NextResponse.json(

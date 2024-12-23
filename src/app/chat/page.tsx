@@ -1,6 +1,5 @@
 "use client";
 
-import { Model } from "@/app/page";
 import "@nlux/themes/nova.css";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar, Breadcrumb, Divider, Grid, Skeleton, Splitter } from "antd";
@@ -13,6 +12,7 @@ import { ChatPanel } from "@/app/chat/ChatPanel";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HomeOutlined, WechatWorkOutlined } from "@ant-design/icons";
 import { useChatModel } from "@/hooks/useChatModel";
+import { ModelData } from "@/app/api/model/route";
 
 const LoadingState = () => (
   <div className="flex justify-center w-screen h-screen items-center">
@@ -40,10 +40,10 @@ function ChatComponent() {
     data: conversations = [],
 
     isLoading: conversationLoading,
-  } = useQuery<Model[]>({
+  } = useQuery<ModelData[]>({
     queryKey: ["models"],
     queryFn: async () => {
-      const { data } = await axios.get<Model[]>(`/api/model?type=page`);
+      const { data } = await axios.get<ModelData[]>(`/api/model?type=page`);
       return data;
     },
   });

@@ -5,21 +5,12 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
+import { ModelData } from "@/app/api/model/route";
 
-export interface Model {
-  configId: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  profilePicture: string;
-  avatar: string;
-  systemPrompt: string;
-}
-
-const tags = ["men", "women"];
+const tags = ["man", "woman"];
 
 export default function Home() {
-  const [models, setModels] = useState<Model[]>([]);
+  const [models, setModels] = useState<ModelData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +76,7 @@ export default function Home() {
         {tags.map((tag) => {
           return (
             <Button
+              key={tag}
               color="primary"
               variant={selectedTags.includes(tag) ? "solid" : "outlined"}
               onClick={() => {
@@ -105,31 +97,38 @@ export default function Home() {
         })}
       </div>
       <main className="grid grid-cols-[repeat(auto-fit,_minmax(150px,1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,1fr))] row-start-2 gap-4 justify-center">
-        {models.map((model) => {
-          return (
-            <div
-              className="rounded-md overflow-hidden hover:scale-110 transition-all bg-white cursor-pointer"
-              key={model.configId}
-              onClick={handleModelClick(model.configId)}
-            >
-              <div className="relative">
-                <img
-                  alt={`${model.name} profile`}
-                  src={model.profilePicture}
-                  className="w-full h-[250px] object-cover"
-                />
-                <div className="px-3 py-2 absolute bottom-0 left-0 right-0 shadow-card">
-                  <h3 className="font-semibold text-white mb-1">
-                    {model.name}
-                  </h3>
-                  <p className="text-sm text-gray-400 line-clamp-2">
-                    {model.description}
-                  </p>
+        {models
+          .filter((model) => {
+            if (selectedTags.length === 0) return true;
+            return (
+              model.tags && model.tags.some((tag) => selectedTags.includes(tag))
+            );
+          })
+          .map((model) => {
+            return (
+              <div
+                className="rounded-md overflow-hidden hover:scale-110 transition-all bg-white cursor-pointer"
+                key={model.configId}
+                onClick={handleModelClick(model.configId)}
+              >
+                <div className="relative">
+                  <img
+                    alt={`${model.name} profile`}
+                    src={model.profilePicture}
+                    className="w-full h-[250px] object-cover"
+                  />
+                  <div className="px-3 py-2 absolute bottom-0 left-0 right-0 shadow-card">
+                    <h3 className="font-semibold text-white mb-1">
+                      {model.name}
+                    </h3>
+                    <p className="text-sm text-gray-400 line-clamp-2">
+                      {model.description}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </main>
     </div>
   );
