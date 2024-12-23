@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { Button } from "antd";
+import { FilterOutlined } from "@ant-design/icons";
 
 export interface Model {
   configId: string;
@@ -14,9 +16,12 @@ export interface Model {
   systemPrompt: string;
 }
 
+const tags = ["men", "women"];
+
 export default function Home() {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { status } = useSession();
@@ -70,14 +75,40 @@ export default function Home() {
       </div>
     );
   }
-
   return (
-    <div className="p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="grid grid-cols-[repeat(auto-fit,_minmax(200px,200px))] row-start-2 gap-4 justify-center">
+    <div className="p-2 sm:p-4 md:p-8 gap-16 font-[family-name:var(--font-geist-sans)]">
+      <div className="flex gap-2 mb-4 items-center">
+        <div>
+          <FilterOutlined className="mr-1" />
+          Filters:
+        </div>
+        {tags.map((tag) => {
+          return (
+            <Button
+              color="primary"
+              variant={selectedTags.includes(tag) ? "solid" : "outlined"}
+              onClick={() => {
+                setSelectedTags((prevSelectedTags: string[]) => {
+                  if (prevSelectedTags.includes(tag)) {
+                    // Remove the tag if it's already selected
+                    return prevSelectedTags.filter((t) => t !== tag);
+                  } else {
+                    // Add the tag if it's not selected
+                    return [...prevSelectedTags, tag];
+                  }
+                });
+              }}
+            >
+              {tag}
+            </Button>
+          );
+        })}
+      </div>
+      <main className="grid grid-cols-[repeat(auto-fit,_minmax(150px,1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,1fr))] row-start-2 gap-4 justify-center">
         {models.map((model) => {
           return (
             <div
-              className="border rounded-md overflow-hidden hover:scale-110 transition-all bg-white cursor-pointer"
+              className="rounded-md overflow-hidden hover:scale-110 transition-all bg-white cursor-pointer"
               key={model.configId}
               onClick={handleModelClick(model.configId)}
             >
@@ -88,10 +119,10 @@ export default function Home() {
                   className="w-full h-[250px] object-cover"
                 />
                 <div className="px-3 py-2 absolute bottom-0 left-0 right-0 shadow-card">
-                  <h3 className="font-semibold text-gray-800 mb-1">
+                  <h3 className="font-semibold text-white mb-1">
                     {model.name}
                   </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">
+                  <p className="text-sm text-gray-400 line-clamp-2">
                     {model.description}
                   </p>
                 </div>
