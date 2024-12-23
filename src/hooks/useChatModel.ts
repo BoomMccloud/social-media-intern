@@ -1,5 +1,5 @@
 // hooks/useChatModel.ts
-import { Model } from "@/app/page";
+import { ModelData } from "@/app/api/model/route";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -11,10 +11,10 @@ export function useChatModel(
     data: model,
     error,
     isLoading: loading,
-  } = useQuery<Model>({
+  } = useQuery<ModelData>({
     queryKey: [configId],
     queryFn: async () => {
-      const { data } = await axios.get<Model>(
+      const { data } = await axios.get<ModelData>(
         `/api/model?type=chat&configId=${configId}`
       );
       return data;
