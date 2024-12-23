@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "antd";
+import { FilterOutlined } from "@ant-design/icons";
 
 export interface Model {
   configId: string;
@@ -75,8 +76,12 @@ export default function Home() {
     );
   }
   return (
-    <div className="p-2 md:p-8 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <div className="flex gap-2 mb-4">
+    <div className="p-2 sm:p-4 md:p-8 gap-16 font-[family-name:var(--font-geist-sans)]">
+      <div className="flex gap-2 mb-4 items-center">
+        <div>
+          <FilterOutlined className="mr-1" />
+          Filters:
+        </div>
         {tags.map((tag) => {
           return (
             <Button
