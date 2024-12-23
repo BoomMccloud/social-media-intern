@@ -1,4 +1,4 @@
-import { AiChat } from "@nlux/react";
+import { AiChat, ChatItem } from "@nlux/react";
 import { Breadcrumb, Skeleton } from "antd";
 import { useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
@@ -113,6 +113,12 @@ export const ChatPanel = () => {
     [configId, getMessages, addMessage]
   ); // Added getMessages to dependencies
 
+  const initialConversation = useMemo<ChatItem[]>(() => {
+    const chatClone =
+      messages.map(({ role, content: message }) => ({ role, message })) || [];
+    return chatClone;
+  }, [messages]);
+
   return (
     <div className="flex justify-center h-screen items-center p-2 md:p-4">
       {!hasConfigId ? (
@@ -147,6 +153,7 @@ export const ChatPanel = () => {
                 avatar: session?.user?.image || "/images/user/avatar.jpg",
               },
             }}
+            initialConversation={initialConversation}
           />
           <button
             onClick={handleClearChat}
