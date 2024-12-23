@@ -85,7 +85,7 @@ export default function Home() {
                 <img
                   alt={`${model.name} profile`}
                   src={model.profilePicture}
-                  className="w-full h-[250px] object-contain"
+                  className="w-full h-[250px] object-cover"
                 />
                 <div className="px-3 py-2 absolute bottom-0 left-0 right-0 shadow-card">
                   <h3 className="font-semibold text-gray-800 mb-1">

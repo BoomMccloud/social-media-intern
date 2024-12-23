@@ -11,7 +11,6 @@ interface UiModelData {
   description: string;
   isActive: boolean;
   profilePicture: string;
-  avatar: string;
 }
 
 interface ChatModelData {
@@ -20,7 +19,7 @@ interface ChatModelData {
   systemPrompt: string;
   isActive: boolean;
   modelId: string;
-  avatar: string;
+  profilePicture: string;
 }
 
 export async function GET(req: Request) {
@@ -47,7 +46,6 @@ export async function GET(req: Request) {
         description: model.description,
         isActive: model.isActive,
         profilePicture: model.profilePicture,
-        avatar: model.avatar,
       }));
 
       return NextResponse.json(pageData);
@@ -60,7 +58,7 @@ export async function GET(req: Request) {
         systemPrompt: model.systemPrompt,
         isActive: model.isActive,
         modelId: model.modelId,
-        avatar: model.avatar,
+        profilePicture: model.profilePicture,
       }));
 
       // If configId is provided, return only that model

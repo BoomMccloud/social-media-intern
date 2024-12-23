@@ -106,7 +106,7 @@ function ChatComponent() {
                     <Avatar
                       className="flex-shrink-0"
                       size={48}
-                      src={conversation.avatar as string}
+                      src={conversation.profilePicture as string}
                     />
 
                     <div className="flex flex-col gap-0.5">

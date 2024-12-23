@@ -139,7 +139,7 @@ export const ChatPanel = () => {
             personaOptions={{
               assistant: {
                 name: model.name,
-                avatar: model.avatar,
+                avatar: model.profilePicture,
                 tagline: model.description,
               },
               user: {
