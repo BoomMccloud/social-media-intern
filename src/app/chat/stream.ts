@@ -58,10 +58,12 @@ export const createStreamingAdapter = (
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       try {
+        console.log("Sending messages to API:", messages);
+
         const response = await fetch("/api/chat", {
           method: "POST",
           body: JSON.stringify({
-            messages,
+            messages: formatMessagesForAPI(messages),
             configId,
           }),
           headers: { "Content-Type": "application/json" },
@@ -87,7 +89,6 @@ export const createStreamingAdapter = (
           }
 
           const chunk = textDecoder.decode(value);
-          // console.log("Received chunk:", chunk);
           const isDone = processSSEChunk(chunk, observer);
           if (isDone) break;
         }
