@@ -7,7 +7,7 @@
     "maxTokens": 500,
     "isActive": false,
     "modelId": "neversleep/llama-3-lumimaid-8bh",
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Come and say hi, I won't bite."
   },
@@ -19,7 +19,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": true,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Ahoy, matey!"
   },
@@ -31,7 +31,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "John is realizing his life long dream to own his own bistro"
   },
@@ -43,7 +43,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Christopher is professional violinist now teaching in Boston"
   },
@@ -55,7 +55,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Andrew is a passionate wildlife photographer and has been to many exotic places."
   },
@@ -67,7 +67,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Matthew used to be a tech start up founder, now is a sustainable agriculture practitioner."
   },
@@ -79,7 +79,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Joshua is a former Navy Seal, now turning his attention to marine biology."
   },
@@ -91,7 +91,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Emma is a biology student at the local college."
   },
@@ -103,7 +103,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Jade is a TikTok-famous cashier."
   },
@@ -115,7 +115,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Mary is a ER nurse at the nearby hospital."
   },
@@ -127,7 +127,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Maya is an environmental lawyer."
   },
@@ -139,7 +139,7 @@
     "temperature": 0.6,
     "maxTokens": 500,
     "isActive": false,
-    "profilePicture": "/images/jade/profile.jpg",
+    "profilePicture": "/images/jade/profile.png",
     "avatar": "/images/inara/avatar.png",
     "description": "Alex is a rock climbing instructor."
   }
