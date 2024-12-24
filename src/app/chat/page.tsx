@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Avatar, Breadcrumb, Divider, Grid, Skeleton, Splitter } from "antd";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 const { useBreakpoint } = Grid;
 
 import { ChatPanel } from "@/app/chat/ChatPanel";
@@ -13,12 +13,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { HomeOutlined, WechatWorkOutlined } from "@ant-design/icons";
 import { useChatModel } from "@/hooks/useChatModel";
 import { ModelData } from "@/app/api/model/route";
-
-const LoadingState = () => (
-  <div className="flex justify-center w-screen h-screen items-center">
-    <div className="text-xl">Loading chat model...</div>
-  </div>
-);
 
 function ChatComponent() {
   const router = useRouter();
@@ -38,7 +32,6 @@ function ChatComponent() {
 
   const {
     data: conversations = [],
-
     isLoading: conversationLoading,
   } = useQuery<ModelData[]>({
     queryKey: ["models"],
@@ -51,6 +44,11 @@ function ChatComponent() {
   const { model } = useChatModel(configId, status === "authenticated");
 
   const showOnlyChat = !md && hasConfigId;
+
+  const handleModelClick = (modelConfigId: string) => {
+    // Instead of directly navigating, update the URL with the configId
+    router.push(`/chat?configId=${modelConfigId}`);
+  };
 
   return (
     <Splitter
@@ -70,45 +68,23 @@ function ChatComponent() {
                   </div>
                 </div>
                 <Divider style={{ margin: "0" }} />
-                <div className="flex items-center gap-3 px-3 py-2">
-                  <Skeleton.Avatar active style={{ width: 48, height: 48 }} />
-                  <div className="flex flex-col gap-0.5 flex-1">
-                    <Skeleton.Node style={{ height: 20 }} />
-                    <Skeleton.Node style={{ height: 16, width: "100%" }} />
-                    <Skeleton.Node style={{ height: 16 }} />
-                  </div>
-                </div>
-                <Divider style={{ margin: "0" }} />
-                <div className="flex items-center gap-3 px-3 py-2">
-                  <Skeleton.Avatar active style={{ width: 48, height: 48 }} />
-                  <div className="flex flex-col gap-0.5 flex-1">
-                    <Skeleton.Node style={{ height: 20 }} />
-                    <Skeleton.Node style={{ height: 16, width: "100%" }} />
-                    <Skeleton.Node style={{ height: 16 }} />
-                  </div>
-                </div>
-                <Divider style={{ margin: "0" }} />
               </>
             ) : (
-              conversations.map((conversation, index) => (
+              conversations.map((conversation) => (
                 <div key={conversation.configId}>
                   <a
-                    key={`conversation-${conversation.configId}`}
                     className={`${
-                      conversation.configId == configId
+                      conversation.configId === configId
                         ? "text-primary bg-[#222222]"
                         : "bg-transparent"
                     } flex items-center h-20 gap-3 px-3 py-2 transition-all hover:text-primary cursor-pointer hover:bg-[#222222]`}
-                    onClick={() => {
-                      router.push(`/chat?configId=${conversation.configId}`);
-                    }}
+                    onClick={() => handleModelClick(conversation.configId)}
                   >
                     <Avatar
                       className="flex-shrink-0"
                       size={48}
                       src={conversation.profilePicture as string}
                     />
-
                     <div className="flex flex-col gap-0.5">
                       <div className="w-full">
                         <h5 className="font-semibold line-clamp-1">
@@ -120,7 +96,6 @@ function ChatComponent() {
                       </div>
                     </div>
                   </a>
-
                   <Divider style={{ margin: "0" }} />
                 </div>
               ))
@@ -170,3 +145,9 @@ export default function Chat() {
     </Suspense>
   );
 }
+
+const LoadingState = () => (
+  <div className="flex justify-center w-screen h-screen items-center">
+    <div className="text-xl">Loading available models...</div>
+  </div>
+);
