@@ -30,10 +30,13 @@ const ErrorState = ({
 );
 export const ChatPanel = () => {
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const configId = searchParams.get("configId");
   const hasConfigId = configId != null;
+  
+  const [showScenarioSelector, setShowScenarioSelector] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+
   const { status, data: session } = useSession({
     required: true,
     onUnauthenticated() {
@@ -51,7 +54,7 @@ export const ChatPanel = () => {
   // Get existing messages for this chat
   const messages = useMemo(
     () => (configId ? getMessages(configId) : []),
-    [configId, getMessages]
+    [configId, getMessages, selectedScenario]
   );
 
   // Debug logging to verify messages state
@@ -63,9 +66,6 @@ export const ChatPanel = () => {
       window.location.reload();
     }
   }, [configId, clearSession]);
-
-  const [showScenarioSelector, setShowScenarioSelector] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
   // Update the useEffect to check localStorage for existing scenario
   useEffect(() => {
@@ -79,11 +79,81 @@ export const ChatPanel = () => {
     }
   }, [configId]);
 
-  const handleScenarioSelect = (scenario: Scenario) => {
-    setSelectedScenario(scenario);
-    setShowScenarioSelector(false);
+  const handleScenarioSelect = async (scenario: Scenario) => {
     if (configId) {
+      // Clear messages first
+      clearSession(configId);
+      
+      // Update state after clearing
+      setSelectedScenario(scenario);
+      setShowScenarioSelector(false);
       localStorage.setItem(`scenario-${configId}`, JSON.stringify(scenario));
+
+      // Create and add system message
+      const systemMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "system",
+        content: `You are in the following scenario:
+${scenario.scenario_description}
+
+Setting: ${scenario.setting.join(', ')}
+Relationship with other character(s): ${scenario.relationship.join(', ')}
+
+Important instructions:
+1. When talking to users, you must ONLY use "hey there" or "you", except when the user requests using their name (which they will tell you what is their name).
+2. Stay in character and interact according to this scenario
+3. Never break this rule about self-reference under any circumstances
+4. Start the conversation with a greeting that fits the scenario`,
+        createdAt: new Date(),
+      };
+
+      // Add system message and wait for store to update
+      addMessage(configId, systemMessage);
+
+      // Create a dummy user message
+      const triggerMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: "/start",
+        createdAt: new Date(),
+        hidden: true
+      };
+
+      try {
+        const adapter = createStreamingAdapter(configId);
+        let assistantResponse = "";
+
+        await new Promise((resolve, reject) => {
+          adapter.streamText([systemMessage, triggerMessage], {
+            next: (content: string) => {
+              assistantResponse += content;
+            },
+            error: (error: Error) => {
+              console.error('Error sending initial greeting:', error);
+              reject(error);
+            },
+            complete: () => {
+              const assistantMessage: ChatMessage = {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: assistantResponse,
+                createdAt: new Date(),
+              };
+              addMessage(configId, assistantMessage);
+              resolve(null);
+            },
+          });
+        });
+
+        // Force update of the messages state
+        const updatedMessages = getMessages(configId);
+        console.log('Final messages after greeting:', updatedMessages);
+        
+        // Force a re-render
+        setSelectedScenario({...scenario}); // Force re-render by creating new object
+      } catch (error) {
+        console.error('Failed to generate initial greeting:', error);
+      }
     }
   };
 
@@ -179,9 +249,16 @@ Important instructions:
   );
 
   const initialConversation = useMemo<ChatItem[]>(() => {
-    const chatClone =
-      messages.map(({ role, content: message }) => ({ role, message })) || [];
+    console.log('Raw messages in initialConversation:', messages);
+    const chatClone = messages
+      .filter(msg => !msg.hidden && msg.role !== 'system')
+      .map(({ role, content: message }) => ({ role, message })) || [];
+    console.log('Filtered messages in initialConversation:', chatClone);
     return chatClone;
+  }, [messages]);
+
+  useEffect(() => {
+    console.log('Messages changed:', messages);
   }, [messages]);
 
   return (

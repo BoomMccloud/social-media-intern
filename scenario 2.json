@@ -1,0 +1,152 @@
+{
+  "scenarios": [
+    {
+      "source": [
+        {
+          "age": ["young_adult"],
+          "gender": ["woman"]
+        },
+        {
+          "age": ["adult", "mature"],
+          "gender": ["man"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult"],
+          "gender": ["woman"]
+        }
+      ],
+      "relationship": ["colleagues", "professional", "mentor_mentee"],
+      "setting": ["office", "corporate", "workplace"],
+      "scenario_description": "Personal assistant and executive developing professional relationship with growing mutual respect and understanding",
+      "popularity_score": 2339
+    },
+    {
+      "source": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["strangers", "guests", "social_acquaintances"],
+      "setting": ["wedding", "formal_event", "celebration"],
+      "scenario_description": "Two guests meeting at a mutual friend's wedding, discovering shared interests while navigating social dynamics",
+      "popularity_score": 1302
+    },
+    {
+      "source": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["childhood_friends", "old_friends", "reconnecting"],
+      "setting": ["home", "private_space", "casual_setting"],
+      "scenario_description": "Childhood friends reuniting after years apart, sharing stories and memories while dealing with current life situations",
+      "popularity_score": 1260
+    },
+    {
+      "source": [
+        {
+          "age": ["young_adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult", "mature"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["professional", "mentor_mentee", "colleagues"],
+      "setting": ["office", "workplace", "professional_environment"],
+      "scenario_description": "Mentor and mentee navigating professional development and career growth",
+      "popularity_score": 1139
+    },
+    {
+      "source": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["neighbors", "community_members", "acquaintances"],
+      "setting": ["residential", "community", "neighborhood"],
+      "scenario_description": "Neighbors becoming friends through shared community activities and mutual support",
+      "popularity_score": 971
+    },
+    {
+      "source": [
+        {
+          "age": ["young_adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["mature"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["professional", "colleagues", "mentor_mentee"],
+      "setting": ["office", "corporate", "professional_environment"],
+      "scenario_description": "Senior executive and junior employee working on important project together, developing mutual respect",
+      "popularity_score": 928
+    },
+    {
+      "source": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["online_friends", "long_distance", "virtual_connection"],
+      "setting": ["online", "virtual", "digital_space"],
+      "scenario_description": "Long-distance friendship developing through shared interests and daily conversations",
+      "popularity_score": 819
+    },
+    {
+      "source": [
+        {
+          "age": ["adult", "mature"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "target": [
+        {
+          "age": ["adult", "mature"],
+          "gender": ["man", "woman"]
+        }
+      ],
+      "relationship": ["ex_partners", "past_relationship", "former_couple"],
+      "setting": ["public_place", "casual_setting", "chance_meeting"],
+      "scenario_description": "Former partners unexpectedly meeting in public, navigating past history and current lives",
+      "popularity_score": 757
+    }
+  ]
+}
