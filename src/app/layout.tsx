@@ -4,7 +4,7 @@ import "./globals.css";
 import { Layout, ConfigProvider, theme } from "antd";
 import { Sidebar } from "../components/Sidebar";
 import Providers from "./Providers";
-import { StoreInitializer } from '@/components/StoreInitializer';
+import { StoreInitializer } from "@/components/StoreInitializer";
 
 const { Content } = Layout;
 
@@ -58,12 +58,7 @@ export default function RootLayout({
           >
             <Layout>
               <Sidebar />
-              <Layout 
-                className="min-h-screen transition-all duration-300"
-                style={{ 
-                  marginLeft: '200px' // Default sidebar width
-                }}
-              >
+              <Layout className="min-h-screen transition-all duration-300">
                 <Content className="min-h-screen">{children}</Content>
               </Layout>
             </Layout>
