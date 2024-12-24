@@ -7,6 +7,7 @@ export interface Message {
 export interface ChatMessage extends Message {
   id: string;
   createdAt: Date;
+  hidden?: boolean;
 }
 
 export interface ModelConfig {

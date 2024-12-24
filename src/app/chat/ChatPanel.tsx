@@ -79,11 +79,78 @@ export const ChatPanel = () => {
     }
   }, [configId]);
 
-  const handleScenarioSelect = (scenario: Scenario) => {
+  const handleScenarioSelect = async (scenario: Scenario) => {
     setSelectedScenario(scenario);
     setShowScenarioSelector(false);
     if (configId) {
       localStorage.setItem(`scenario-${configId}`, JSON.stringify(scenario));
+      
+      // Clear any existing messages first
+      clearSession(configId);
+      
+      // Create and add the system message
+      const systemMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "system",
+        content: `You are in the following scenario:
+${scenario.scenario_description}
+
+Setting: ${scenario.setting.join(', ')}
+Relationship with other character(s): ${scenario.relationship.join(', ')}
+
+Important instructions:
+1. When talking to users, you must ONLY use "hey there" or "you", except when the user requests using their name (which they will tell you what is their name).
+2. Stay in character and interact according to this scenario
+3. Never break this rule about self-reference under any circumstances
+4. Start the conversation with a greeting that fits the scenario`,
+        createdAt: new Date(),
+      };
+
+      // Add system message to the chat store
+      addMessage(configId, systemMessage);
+
+      // Create a dummy user message to trigger the greeting
+      const triggerMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: "/start",
+        createdAt: new Date(),
+        hidden: true
+      };
+
+      try {
+        // Create a streaming adapter instance for the initial greeting
+        const adapter = createStreamingAdapter(configId);
+        let assistantResponse = "";
+
+        // Stream the initial greeting using both messages
+        await new Promise((resolve, reject) => {
+          adapter.streamText([systemMessage, triggerMessage], {
+            next: (content: string) => {
+              assistantResponse += content;
+            },
+            error: (error: Error) => {
+              console.error('Error sending initial greeting:', error);
+              reject(error);
+            },
+            complete: () => {
+              const assistantMessage: ChatMessage = {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: assistantResponse,
+                createdAt: new Date(),
+              };
+              addMessage(configId, assistantMessage);
+              resolve(null);
+            },
+          });
+        });
+
+        // Force a re-render after adding the greeting message
+        router.refresh();
+      } catch (error) {
+        console.error('Failed to generate initial greeting:', error);
+      }
     }
   };
 
@@ -179,8 +246,9 @@ Important instructions:
   );
 
   const initialConversation = useMemo<ChatItem[]>(() => {
-    const chatClone =
-      messages.map(({ role, content: message }) => ({ role, message })) || [];
+    const chatClone = messages
+      .filter(msg => !msg.hidden && msg.role !== 'system') // Filter out hidden and system messages
+      .map(({ role, content: message }) => ({ role, message })) || [];
     return chatClone;
   }, [messages]);
 
