@@ -13,17 +13,12 @@ import { ChatPanel } from "@/app/chat/ChatPanel";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HomeOutlined, WechatWorkOutlined } from "@ant-design/icons";
 import { useChatModel } from "@/hooks/useChatModel";
-import { ScenarioSelector } from "@/components/ScenarioSelector";
-import { Scenario } from "@/types/scenario";
 
 function ChatComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const configId = searchParams.get("configId");
   const hasConfigId = configId != null;
-
-  const [showScenarioSelector, setShowScenarioSelector] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
 
   const { status } = useSession({
     required: true,
@@ -50,18 +45,9 @@ function ChatComponent() {
 
   const showOnlyChat = !md && hasConfigId;
 
-  const handleModelClick = (conversation: Model) => {
-    setSelectedModel(conversation);
-    setShowScenarioSelector(true);
-  };
-
-  const handleScenarioSelect = (scenario: Scenario) => {
-    if (selectedModel) {
-      // Store the selected scenario in localStorage or state management
-      localStorage.setItem(`scenario-${selectedModel.configId}`, JSON.stringify(scenario));
-      router.push(`/chat?configId=${selectedModel.configId}`);
-    }
-    setShowScenarioSelector(false);
+  const handleModelClick = (modelConfigId: string) => {
+    // Instead of directly navigating, update the URL with the configId
+    router.push(`/chat?configId=${modelConfigId}`);
   };
 
   return (
@@ -92,7 +78,7 @@ function ChatComponent() {
                         ? "text-primary bg-[#222222]"
                         : "bg-transparent"
                     } flex items-center h-20 gap-3 px-3 py-2 transition-all hover:text-primary cursor-pointer hover:bg-[#222222]`}
-                    onClick={() => handleModelClick(conversation)}
+                    onClick={() => handleModelClick(conversation.configId)}
                   >
                     <Avatar
                       className="flex-shrink-0"
@@ -147,16 +133,6 @@ function ChatComponent() {
 
           <ChatPanel />
         </Splitter.Panel>
-      )}
-
-      {/* Scenario Selector Modal */}
-      {selectedModel && (
-        <ScenarioSelector
-          isOpen={showScenarioSelector}
-          onSelect={handleScenarioSelect}
-          onClose={() => setShowScenarioSelector(false)}
-          modelSystemPrompt={selectedModel.systemPrompt}
-        />
       )}
     </Splitter>
   );

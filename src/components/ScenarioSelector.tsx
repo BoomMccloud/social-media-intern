@@ -23,27 +23,24 @@ export const ScenarioSelector = ({
   useEffect(() => {
     async function loadScenarios() {
       try {
+        console.log('Loading scenarios...');
         const response = await fetch('/api/scenarios');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        setScenarios(data.scenarios);
+        console.log('Loaded scenarios:', data);
+        
+        setScenarios(data.scenarios || []);
         
         const modelCharacteristics = extractModelCharacteristics(modelSystemPrompt);
-        console.log('Model characteristics:', modelCharacteristics);
-        
         if (modelCharacteristics) {
-          const compatible = data.scenarios.filter(scenario => {
-            const isCompatible = isScenarioCompatible(scenario, modelCharacteristics);
-            console.log('Scenario compatibility check:', {
-              scenario: scenario.scenario_description,
-              isCompatible
-            });
-            return isCompatible;
-          });
-          console.log('Compatible scenarios:', compatible.length);
+          const compatible = data.scenarios.filter(scenario => 
+            isScenarioCompatible(scenario, modelCharacteristics)
+          );
           setCompatibleScenarios(compatible);
         } else {
-          console.log('No model characteristics found, showing all scenarios');
-          setCompatibleScenarios(data.scenarios);
+          setCompatibleScenarios(data.scenarios || []);
         }
       } catch (error) {
         console.error('Error loading scenarios:', error);
@@ -53,7 +50,6 @@ export const ScenarioSelector = ({
     }
 
     if (isOpen) {
-      console.log('Loading scenarios with system prompt:', modelSystemPrompt);
       loadScenarios();
     }
   }, [isOpen, modelSystemPrompt]);
@@ -65,6 +61,7 @@ export const ScenarioSelector = ({
       onCancel={onClose}
       footer={null}
       width={800}
+      destroyOnClose={true}
     >
       {loading ? (
         <div className="flex justify-center p-8">
@@ -84,9 +81,12 @@ export const ScenarioSelector = ({
                 onClick={() => onSelect(scenario)}
                 className="h-full cursor-pointer transition-all hover:scale-105"
               >
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold mb-2">
                   {scenario.scenario_description}
                 </h3>
+                <p className="text-sm text-gray-500">
+                  Setting: {scenario.setting.join(', ')}
+                </p>
               </Card>
             </Col>
           ))}

@@ -1,6 +1,6 @@
 import { AiChat } from "@nlux/react";
 import { Breadcrumb, Skeleton } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useChatModel } from "@/hooks/useChatModel";
@@ -67,9 +67,24 @@ export const ChatPanel = () => {
   const [showScenarioSelector, setShowScenarioSelector] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
+  // Update the useEffect to check localStorage for existing scenario
+  useEffect(() => {
+    if (configId) {
+      const savedScenario = localStorage.getItem(`scenario-${configId}`);
+      if (savedScenario) {
+        setSelectedScenario(JSON.parse(savedScenario));
+      } else {
+        setShowScenarioSelector(true);
+      }
+    }
+  }, [configId]);
+
   const handleScenarioSelect = (scenario: Scenario) => {
     setSelectedScenario(scenario);
     setShowScenarioSelector(false);
+    if (configId) {
+      localStorage.setItem(`scenario-${configId}`, JSON.stringify(scenario));
+    }
   };
 
   const customStreamingAdapter = useCallback(
@@ -201,6 +216,12 @@ Remember to stay in character and interact according to this scenario.`,
               },
             }}
           />
+          <button
+            onClick={() => setShowScenarioSelector(true)}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors mr-2"
+          >
+            Change Scenario
+          </button>
           <button
             onClick={handleClearChat}
             className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
