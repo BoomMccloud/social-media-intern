@@ -100,7 +100,7 @@ export const ChatPanel = () => {
           if (currentMessages.length === 0 && selectedScenario) {
             console.log("Adding scenario context to first message");
             
-            // Add system message with scenario context
+            // Modified system message with the new instruction
             const systemMessage: ChatMessage = {
               id: crypto.randomUUID(),
               role: "system",
@@ -110,7 +110,10 @@ ${selectedScenario.scenario_description}
 Setting: ${selectedScenario.setting.join(', ')}
 Relationship with other character(s): ${selectedScenario.relationship.join(', ')}
 
-Remember to stay in character and interact according to this scenario.`,
+Important instructions:
+1. When referring to yourself, you must ONLY use "hey there" or "you"
+2. Stay in character and interact according to this scenario
+3. Never break this rule about self-reference under any circumstances`,
               createdAt: new Date(),
             };
 

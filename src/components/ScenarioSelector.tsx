@@ -40,7 +40,7 @@ export const ScenarioSelector = ({
         
         const modelCharacteristics = extractModelCharacteristics(modelSystemPrompt);
         if (modelCharacteristics) {
-          const compatible = data.scenarios.filter(scenario => 
+          const compatible = data.scenarios.filter((scenario: Scenario) => 
             isScenarioCompatible(scenario, modelCharacteristics)
           );
           setCompatibleScenarios(compatible);
