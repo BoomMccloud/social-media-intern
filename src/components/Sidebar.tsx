@@ -1,4 +1,3 @@
-// src/components/Sidebar.tsx
 "use client";
 
 import { Layout, Menu, Button } from "antd";
@@ -9,7 +8,7 @@ import {
   LogoutOutlined,
   WechatWorkOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -42,6 +41,14 @@ export const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Update layout margin when sidebar collapses
+  useEffect(() => {
+    const mainLayout = document.querySelector('.ant-layout:not(:first-child)');
+    if (mainLayout) {
+      (mainLayout as HTMLElement).style.marginLeft = collapsed ? '70px' : '200px';
+    }
+  }, [collapsed]);
+
   const handleSignIn = () => {
     router.push("/auth/login");
   };
@@ -66,8 +73,16 @@ export const Sidebar = () => {
       breakpoint="lg"
       zeroWidthTriggerStyle={{ background: "red" }}
       collapsedWidth={70}
+      className="fixed left-0 top-0 bottom-0 h-screen overflow-auto shadow-lg"
+      style={{
+        position: 'fixed',
+        height: '100vh',
+        left: 0,
+        top: 0,
+        bottom: 0,
+      }}
     >
-      <div className="flex flex-col justify-between p-2 h-full">
+      <div className="flex flex-col justify-between h-full p-2">
         <Menu
           theme="dark"
           defaultSelectedKeys={[pathname]}

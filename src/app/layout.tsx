@@ -56,10 +56,15 @@ export default function RootLayout({
               },
             }}
           >
-            <Layout className="min-h-screen">
+            <Layout>
               <Sidebar />
-              <Layout>
-                <Content>{children}</Content>
+              <Layout 
+                className="min-h-screen transition-all duration-300"
+                style={{ 
+                  marginLeft: '200px' // Default sidebar width
+                }}
+              >
+                <Content className="min-h-screen">{children}</Content>
               </Layout>
             </Layout>
           </ConfigProvider>
