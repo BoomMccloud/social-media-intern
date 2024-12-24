@@ -30,10 +30,13 @@ const ErrorState = ({
 );
 export const ChatPanel = () => {
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const configId = searchParams.get("configId");
   const hasConfigId = configId != null;
+  
+  const [showScenarioSelector, setShowScenarioSelector] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+
   const { status, data: session } = useSession({
     required: true,
     onUnauthenticated() {
@@ -51,7 +54,7 @@ export const ChatPanel = () => {
   // Get existing messages for this chat
   const messages = useMemo(
     () => (configId ? getMessages(configId) : []),
-    [configId, getMessages]
+    [configId, getMessages, selectedScenario]
   );
 
   // Debug logging to verify messages state
@@ -63,9 +66,6 @@ export const ChatPanel = () => {
       window.location.reload();
     }
   }, [configId, clearSession]);
-
-  const [showScenarioSelector, setShowScenarioSelector] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
   // Update the useEffect to check localStorage for existing scenario
   useEffect(() => {
@@ -80,15 +80,16 @@ export const ChatPanel = () => {
   }, [configId]);
 
   const handleScenarioSelect = async (scenario: Scenario) => {
-    setSelectedScenario(scenario);
-    setShowScenarioSelector(false);
     if (configId) {
-      localStorage.setItem(`scenario-${configId}`, JSON.stringify(scenario));
-      
-      // Clear any existing messages first
+      // Clear messages first
       clearSession(configId);
       
-      // Create and add the system message
+      // Update state after clearing
+      setSelectedScenario(scenario);
+      setShowScenarioSelector(false);
+      localStorage.setItem(`scenario-${configId}`, JSON.stringify(scenario));
+
+      // Create and add system message
       const systemMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "system",
@@ -106,10 +107,10 @@ Important instructions:
         createdAt: new Date(),
       };
 
-      // Add system message to the chat store
+      // Add system message and wait for store to update
       addMessage(configId, systemMessage);
 
-      // Create a dummy user message to trigger the greeting
+      // Create a dummy user message
       const triggerMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
@@ -119,11 +120,9 @@ Important instructions:
       };
 
       try {
-        // Create a streaming adapter instance for the initial greeting
         const adapter = createStreamingAdapter(configId);
         let assistantResponse = "";
 
-        // Stream the initial greeting using both messages
         await new Promise((resolve, reject) => {
           adapter.streamText([systemMessage, triggerMessage], {
             next: (content: string) => {
@@ -146,8 +145,12 @@ Important instructions:
           });
         });
 
-        // Force a re-render after adding the greeting message
-        router.refresh();
+        // Force update of the messages state
+        const updatedMessages = getMessages(configId);
+        console.log('Final messages after greeting:', updatedMessages);
+        
+        // Force a re-render
+        setSelectedScenario({...scenario}); // Force re-render by creating new object
       } catch (error) {
         console.error('Failed to generate initial greeting:', error);
       }
@@ -246,10 +249,16 @@ Important instructions:
   );
 
   const initialConversation = useMemo<ChatItem[]>(() => {
+    console.log('Raw messages in initialConversation:', messages);
     const chatClone = messages
-      .filter(msg => !msg.hidden && msg.role !== 'system') // Filter out hidden and system messages
+      .filter(msg => !msg.hidden && msg.role !== 'system')
       .map(({ role, content: message }) => ({ role, message })) || [];
+    console.log('Filtered messages in initialConversation:', chatClone);
     return chatClone;
+  }, [messages]);
+
+  useEffect(() => {
+    console.log('Messages changed:', messages);
   }, [messages]);
 
   return (
