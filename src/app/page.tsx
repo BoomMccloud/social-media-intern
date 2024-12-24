@@ -1,11 +1,14 @@
 "use client";
-import Link from "next/link";
+// import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
 import { ModelData } from "@/app/api/model/route";
+import AppHeader from '@/components/Header';
+import AppFooter from '@/components/Footer';
+import HeroCarousel from '@/components/HeroCarousel';
 
 const tags = ["man", "woman"];
 
@@ -66,70 +69,85 @@ export default function Home() {
       </div>
     );
   }
+
   return (
-    <div className="p-2 sm:p-4 md:p-8 gap-16 font-[family-name:var(--font-geist-sans)]">
-      <div className="flex gap-2 mb-4 items-center">
-        <div>
-          <FilterOutlined className="mr-1" />
-          Filters:
+    <div className="min-h-screen flex flex-col bg-[#0f0f10]">
+      <AppHeader />
+      
+      {/* Hero Section */}
+      <section className="w-full">
+        <HeroCarousel />
+      </section>
+
+      {/* Models Section */}
+      <section className="flex-grow container mx-auto px-4 py-12">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-[#F8BBD0] mb-4">Explore Our Models</h2>
+          <p className="text-gray-400 mb-6">Discover AI companions tailored to your unique needs and preferences.</p>
+          
+          {/* Filters */}
+          <div className="flex gap-2 items-center p-4 bg-[#0a0a0a] rounded-lg">
+            <div className="text-gray-300">
+              <FilterOutlined className="mr-1" />
+              Filters:
+            </div>
+            {tags.map((tag) => (
+              <Button
+                key={tag}
+                color="primary"
+                variant={selectedTags.includes(tag) ? "solid" : "outlined"}
+                onClick={() => {
+                  setSelectedTags((prevSelectedTags: string[]) => {
+                    if (prevSelectedTags.includes(tag)) {
+                      return prevSelectedTags.filter((t) => t !== tag);
+                    } else {
+                      return [...prevSelectedTags, tag];
+                    }
+                  });
+                }}
+              >
+                {tag}
+              </Button>
+            ))}
+          </div>
         </div>
-        {tags.map((tag) => {
-          return (
-            <Button
-              key={tag}
-              color="primary"
-              variant={selectedTags.includes(tag) ? "solid" : "outlined"}
-              onClick={() => {
-                setSelectedTags((prevSelectedTags: string[]) => {
-                  if (prevSelectedTags.includes(tag)) {
-                    // Remove the tag if it's already selected
-                    return prevSelectedTags.filter((t) => t !== tag);
-                  } else {
-                    // Add the tag if it's not selected
-                    return [...prevSelectedTags, tag];
-                  }
-                });
-              }}
-            >
-              {tag}
-            </Button>
-          );
-        })}
-      </div>
-      <main className="grid grid-cols-[repeat(auto-fit,_minmax(150px,1fr))] md:grid-cols-[repeat(auto-fit,_minmax(200px,1fr))] row-start-2 gap-4 justify-center">
-        {models
-          .filter((model) => {
-            if (selectedTags.length === 0) return true;
-            return (
-              model.tags && model.tags.some((tag) => selectedTags.includes(tag))
-            );
-          })
-          .map((model) => {
-            return (
+
+        {/* Model Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {models
+            .filter((model) => {
+              if (selectedTags.length === 0) return true;
+              return (
+                model.tags && model.tags.some((tag) => selectedTags.includes(tag))
+              );
+            })
+            .map((model) => (
               <div
-                className="rounded-md overflow-hidden hover:scale-110 transition-all bg-white cursor-pointer"
                 key={model.configId}
+                className="bg-[#0a0a0a] rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg"
                 onClick={handleModelClick(model.configId)}
               >
                 <div className="relative">
                   <img
                     alt={`${model.name} profile`}
                     src={model.profilePicture}
-                    className="w-full h-[250px] object-cover"
+                    className="w-full aspect-[3/4] object-cover"
                   />
-                  <div className="px-3 py-2 absolute bottom-0 left-0 right-0 shadow-card">
-                    <h3 className="font-semibold text-white mb-1">
+                  <div className="p-4">
+                    <h3 className="text-xl font-semibold text-[#F8BBD0] mb-2">
                       {model.name}
                     </h3>
-                    <p className="text-sm text-gray-400 line-clamp-2">
+                    <p className="text-gray-400 line-clamp-2">
                       {model.description}
                     </p>
                   </div>
                 </div>
               </div>
-            );
-          })}
-      </main>
+            ))}
+        </div>
+      </section>
+
+      <AppFooter />
     </div>
   );
 }
