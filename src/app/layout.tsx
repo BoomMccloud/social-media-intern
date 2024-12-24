@@ -5,6 +5,7 @@ import { Layout, ConfigProvider, theme } from "antd";
 import { Sidebar } from "../components/Sidebar";
 import Providers from "./Providers";
 import { StoreInitializer } from "@/components/StoreInitializer";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const { Content } = Layout;
 
@@ -26,6 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleAnalytics gaId="G-Y50YDQH1JF" />
       <Providers>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
