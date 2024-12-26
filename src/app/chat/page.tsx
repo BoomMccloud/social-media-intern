@@ -27,13 +27,13 @@ function ChatComponent() {
       router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
     },
   });
+  const [sizes, setSizes] = useState<(number | string)[]>(["300", "70%"]);
 
   const { xs, sm, md } = useBreakpoint();
 
-  const {
-    data: conversations = [],
-    isLoading: conversationLoading,
-  } = useQuery<ModelData[]>({
+  const { data: conversations = [], isLoading: conversationLoading } = useQuery<
+    ModelData[]
+  >({
     queryKey: ["models"],
     queryFn: async () => {
       const { data } = await axios.get<ModelData[]>(`/api/model?type=page`);
@@ -53,9 +53,20 @@ function ChatComponent() {
   return (
     <Splitter
       style={{ height: "100vh", boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)" }}
+      onResize={(sizes) => {
+        const newSizes = [...sizes];
+        if (sizes[0] > 500) {
+          newSizes[0] = 500;
+          newSizes[1] = sizes[1] + (sizes[0] - 500);
+        } else if (sizes[0] < 72) {
+          newSizes[0] = 72;
+        }
+
+        setSizes(newSizes);
+      }}
     >
       {(md || !hasConfigId) && (
-        <Splitter.Panel defaultSize={"300"} min="100" max="70%">
+        <Splitter.Panel size={sizes[0]}>
           <nav className="font-medium">
             {conversationLoading || status === "loading" ? (
               <>
@@ -104,7 +115,7 @@ function ChatComponent() {
         </Splitter.Panel>
       )}
       {(md || showOnlyChat) && (
-        <Splitter.Panel>
+        <Splitter.Panel size={sizes[1]}>
           {showOnlyChat && (
             <div className="py-4 px-2 md:p-8 absolute">
               <Breadcrumb

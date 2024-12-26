@@ -153,3 +153,7 @@ table {
   padding: 24px;
   width: 100%;
 }
+
+.nlux-comp-composer > button:not(:disabled) {
+  color: #f8bbd0;
+}
