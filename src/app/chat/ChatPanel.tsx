@@ -80,7 +80,7 @@ export const ChatPanel = () => {
   }, [configId]);
 
   const handleScenarioSelect = async (scenario: Scenario) => {
-    if (configId) {
+    if (configId && model) {
       // Clear messages first
       clearSession(configId);
       
@@ -93,17 +93,20 @@ export const ChatPanel = () => {
       const systemMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "system",
-        content: `You are in the following scenario:
+        content: `You are playing your character in the following scenario:
 ${scenario.scenario_description}
 
 Setting: ${scenario.setting.join(', ')}
 Relationship with other character(s): ${scenario.relationship.join(', ')}
 
 Important instructions:
-1. When talking to users, you must ONLY use "hey there" or "you", except when the user requests using their name (which they will tell you what is their name).
-2. Stay in character and interact according to this scenario
-3. Never break this rule about self-reference under any circumstances
-4. Start the conversation with a greeting that fits the scenario`,
+1. Maintain your character's personality and background while adapting to this scenario
+2. When talking to users, only use "hey there" or "you" until they tell you their name
+3. Stay in character and interact according to this scenario
+4. Start the conversation with a greeting that fits the scenario and your character
+5. Respond naturally in first person without prefixing your responses with your name
+
+Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your unique traits and background, but you're now in this specific scenario. Speak naturally as if in a real conversation.`,
         createdAt: new Date(),
       };
 
@@ -154,6 +157,8 @@ Important instructions:
       } catch (error) {
         console.error('Failed to generate initial greeting:', error);
       }
+    } else {
+      console.error('Missing configId or model');
     }
   };
 
