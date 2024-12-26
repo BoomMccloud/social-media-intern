@@ -155,14 +155,20 @@ export const ScenarioSelector = ({
               hoverable
               onClick={() => setShowCustomForm(true)}
               className="h-full cursor-pointer transition-all hover:scale-105 bg-gradient-to-r from-blue-50 to-blue-100"
-            >
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <PlusOutlined className="text-2xl mb-2" />
-                <h3 className="text-lg font-semibold">Create Your Own</h3>
-                <p className="text-sm text-gray-500">
-                  Customize a unique scenario
-                </p>
-              </div>
+              >
+                <div className="flex flex-col h-full text-center">
+                  <div className="pt-4">
+                    <h3 className="text-lg font-semibold text-black">Create Your Own</h3>
+                  </div>
+                  <div className="flex-1 flex items-center justify-center">
+                    <PlusOutlined className="text-2xl text-black" />
+                  </div>
+                  <div className="pb-4">
+                    <p className="text-sm text-gray-500">
+                      Describe your own scenario and act it out
+                    </p>
+                  </div>
+                </div>
             </Card>
           </Col>
         </Row>
