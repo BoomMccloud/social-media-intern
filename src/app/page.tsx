@@ -6,11 +6,11 @@ import { useSession } from "next-auth/react";
 import { Button } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
 import { ModelData } from "@/app/api/model/route";
-import AppHeader from '@/components/Header';
+// import AppHeader from '@/components/Header';
 import AppFooter from '@/components/Footer';
 import HeroCarousel from '@/components/HeroCarousel';
 
-const tags = ["man", "woman"];
+const tags = ["man", "woman", "other"];
 
 export default function Home() {
   const [models, setModels] = useState<ModelData[]>([]);
@@ -72,7 +72,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f10]">
-      <AppHeader />
+      {/* <AppHeader /> */}
       
       {/* Hero Section */}
       <section className="w-full">
@@ -83,7 +83,9 @@ export default function Home() {
       <section className="flex-grow container mx-auto px-4 py-12">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-[#F8BBD0] mb-4">Explore Our Models</h2>
-          <p className="text-gray-400 mb-6">Discover AI companions tailored to your unique needs and preferences.</p>
+          <p className="text-gray-400 mb-6">
+            Discover AI companions tailored to your unique needs and preferences. Engage in conversations about any topic of your desire.
+          </p>
           
           {/* Filters */}
           <div className="flex gap-2 items-center p-4 bg-[#0a0a0a] rounded-lg">
