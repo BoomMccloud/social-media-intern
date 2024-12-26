@@ -262,7 +262,7 @@ Important instructions:
   }, [messages]);
 
   return (
-    <div className="flex justify-center h-screen items-center p-2 md:p-4">
+    <div className="flex justify-center h-screen items-center p-2 md:p-4 w-full">
       {!hasConfigId ? (
         <div>Select chat</div>
       ) : status === "loading" ? (
@@ -280,7 +280,7 @@ Important instructions:
           <Skeleton.Node style={{ height: 16, width: "100%" }} />
         </div>
       ) : model ? (
-        <div style={{ height: 500, maxWidth: 600, width: "100%" }}>
+        <div style={{ height: "85vh", width: "90%" }} className="max-w-full">
           <ScenarioSelector
             isOpen={showScenarioSelector}
             onSelect={handleScenarioSelect}
