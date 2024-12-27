@@ -287,8 +287,7 @@ Important instructions:
       ) : model ? (
         <div style={{ 
           height: "85vh", 
-          width: "90%",
-          backgroundColor: "rgb(243, 244, 246)" // Light gray
+          width: "90%"
           }} className="max-w-full">
           <ScenarioSelector
             isOpen={showScenarioSelector}
