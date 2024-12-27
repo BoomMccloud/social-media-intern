@@ -5,6 +5,13 @@ import Link from 'next/link';
 const HeroCarousel: React.FC = () => {
   const carouselItems = [
     {
+      image: "/early.png?height=400&width=1200",
+      title: "AI Playmates Early Access",
+      description: "Be one of the earliest users of AI Playmates, help us build the most engaging role playing platform",
+      cta: "Sign Up",
+      link: "/chat"
+    },
+    {
       image: "/companion.png?height=400&width=1200",
       title: "Discover Your AI Companion",
       description: "Explore our diverse collection of AI models designed to enhance your role playing experience",

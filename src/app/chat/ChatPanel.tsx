@@ -7,7 +7,7 @@ import { useChatModel } from "@/hooks/useChatModel";
 import { createStreamingAdapter } from "@/app/chat/stream";
 import { ChatMessage } from "@/types/chat";
 import { useChatStore } from "@/store/chat-store";
-import { HomeOutlined } from "@ant-design/icons";
+// import { HomeOutlined } from "@ant-design/icons";
 import { ScenarioSelector } from '@/components/ScenarioSelector';
 import { Scenario } from '@/types/scenario';
 
@@ -293,7 +293,11 @@ Important instructions:
             modelSystemPrompt={model?.systemPrompt || ''}
           />
           <AiChat
-            displayOptions={{ width: "100%", height: "100%" }}
+            displayOptions={{ 
+              width: "100%", 
+              height: "100%",
+              containerClassName: "bg-gray-100 dark:bg-gray-800"
+             }}
             adapter={customStreamingAdapter(configId)}
             personaOptions={{
               assistant: {
