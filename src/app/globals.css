@@ -18,6 +18,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Helvetica, sans-serif;
+  --nlux-ChatRoom--BackgroundColor: #060524;
 }
 
 html,
@@ -157,3 +158,9 @@ table {
 .nlux-comp-composer > button:not(:disabled) {
   color: #f8bbd0;
 }
+
+.nlux-comp-exceptionBox{
+  z-index: 999 !important;
+}
+
+

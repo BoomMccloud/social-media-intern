@@ -8,8 +8,8 @@ import { createStreamingAdapter } from "@/app/chat/stream";
 import { ChatMessage } from "@/types/chat";
 import { useChatStore } from "@/store/chat-store";
 // import { HomeOutlined } from "@ant-design/icons";
-import { ScenarioSelector } from '@/components/ScenarioSelector';
-import { Scenario } from '@/types/scenario';
+import { ScenarioSelector } from "@/components/ScenarioSelector";
+import { Scenario } from "@/types/scenario";
 
 const ErrorState = ({
   error,
@@ -33,9 +33,11 @@ export const ChatPanel = () => {
   const searchParams = useSearchParams();
   const configId = searchParams.get("configId");
   const hasConfigId = configId != null;
-  
+
   const [showScenarioSelector, setShowScenarioSelector] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
+    null
+  );
 
   const { status, data: session } = useSession({
     required: true,
@@ -83,7 +85,7 @@ export const ChatPanel = () => {
     if (configId && model) {
       // Clear messages first
       clearSession(configId);
-      
+
       // Update state after clearing
       setSelectedScenario(scenario);
       setShowScenarioSelector(false);
@@ -96,8 +98,8 @@ export const ChatPanel = () => {
         content: `You are playing your character in the following scenario:
 ${scenario.scenario_description}
 
-Setting: ${scenario.setting.join(', ')}
-Relationship with other character(s): ${scenario.relationship.join(', ')}
+Setting: ${scenario.setting.join(", ")}
+Relationship with other character(s): ${scenario.relationship.join(", ")}
 
 Important instructions:
 1. Maintain your character's personality and background while adapting to this scenario
@@ -106,7 +108,9 @@ Important instructions:
 4. Start the conversation with a greeting that fits the scenario and your character
 5. Respond naturally in first person without prefixing your responses with your name
 
-Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your unique traits and background, but you're now in this specific scenario. Speak naturally as if in a real conversation.`,
+Remember: You are still yourself (${
+          model?.name ?? "AI Assistant"
+        }) with your unique traits and background, but you're now in this specific scenario. Speak naturally as if in a real conversation.`,
         createdAt: new Date(),
       };
 
@@ -119,7 +123,7 @@ Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your un
         role: "user",
         content: "/start",
         createdAt: new Date(),
-        hidden: true
+        hidden: true,
       };
 
       try {
@@ -132,7 +136,7 @@ Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your un
               assistantResponse += content;
             },
             error: (error: Error) => {
-              console.error('Error sending initial greeting:', error);
+              console.error("Error sending initial greeting:", error);
               reject(error);
             },
             complete: () => {
@@ -150,15 +154,15 @@ Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your un
 
         // Force update of the messages state
         const updatedMessages = getMessages(configId);
-        console.log('Final messages after greeting:', updatedMessages);
-        
+        console.log("Final messages after greeting:", updatedMessages);
+
         // Force a re-render
-        setSelectedScenario({...scenario}); // Force re-render by creating new object
+        setSelectedScenario({ ...scenario }); // Force re-render by creating new object
       } catch (error) {
-        console.error('Failed to generate initial greeting:', error);
+        console.error("Failed to generate initial greeting:", error);
       }
     } else {
-      console.error('Missing configId or model');
+      console.error("Missing configId or model");
     }
   };
 
@@ -174,7 +178,7 @@ Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your un
           // If this is the first message, prepend the scenario context
           if (currentMessages.length === 0 && selectedScenario) {
             console.log("Adding scenario context to first message");
-            
+
             // Modified system message with the new instruction
             const systemMessage: ChatMessage = {
               id: crypto.randomUUID(),
@@ -182,8 +186,10 @@ Remember: You are still yourself (${model?.name ?? 'AI Assistant'}) with your un
               content: `You are in the following scenario:
 ${selectedScenario.scenario_description}
 
-Setting: ${selectedScenario.setting.join(', ')}
-Relationship with other character(s): ${selectedScenario.relationship.join(', ')}
+Setting: ${selectedScenario.setting.join(", ")}
+Relationship with other character(s): ${selectedScenario.relationship.join(
+                ", "
+              )}
 
 Important instructions:
 1. When referring to yourself, you must ONLY use "hey there" or "you"
@@ -216,7 +222,7 @@ Important instructions:
               createdAt: new Date(),
             };
             messagesToSend.push(userMessage);
-            
+
             if (configId) {
               addMessage(configId, userMessage);
             }
@@ -254,16 +260,17 @@ Important instructions:
   );
 
   const initialConversation = useMemo<ChatItem[]>(() => {
-    console.log('Raw messages in initialConversation:', messages);
-    const chatClone = messages
-      .filter(msg => !msg.hidden && msg.role !== 'system')
-      .map(({ role, content: message }) => ({ role, message })) || [];
-    console.log('Filtered messages in initialConversation:', chatClone);
+    console.log("Raw messages in initialConversation:", messages);
+    const chatClone =
+      messages
+        .filter((msg) => !msg.hidden && msg.role !== "system")
+        .map(({ role, content: message }) => ({ role, message })) || [];
+    console.log("Filtered messages in initialConversation:", chatClone);
     return chatClone;
   }, [messages]);
 
   useEffect(() => {
-    console.log('Messages changed:', messages);
+    console.log("Messages changed:", messages);
   }, [messages]);
 
   return (
@@ -285,21 +292,24 @@ Important instructions:
           <Skeleton.Node style={{ height: 16, width: "100%" }} />
         </div>
       ) : model ? (
-        <div style={{ 
-          height: "85vh", 
-          width: "90%"
-          }} className="max-w-full">
+        <div
+          style={{
+            height: "85vh",
+            width: "90%",
+          }}
+          className="max-w-full"
+        >
           <ScenarioSelector
             isOpen={showScenarioSelector}
             onSelect={handleScenarioSelect}
             onClose={() => setShowScenarioSelector(false)}
-            modelSystemPrompt={model?.systemPrompt || ''}
+            modelSystemPrompt={model?.systemPrompt || ""}
           />
           <AiChat
-            displayOptions={{ 
-              width: "100%", 
-              height: "100%"
-             }}
+            displayOptions={{
+              width: "100%",
+              height: "100%",
+            }}
             adapter={customStreamingAdapter(configId)}
             personaOptions={{
               assistant: {
