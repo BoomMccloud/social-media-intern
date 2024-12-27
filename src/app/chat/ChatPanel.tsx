@@ -285,7 +285,11 @@ Important instructions:
           <Skeleton.Node style={{ height: 16, width: "100%" }} />
         </div>
       ) : model ? (
-        <div style={{ height: "85vh", width: "90%" }} className="max-w-full">
+        <div style={{ 
+          height: "85vh", 
+          width: "90%",
+          backgroundColor: "rgb(243, 244, 246)" // Light gray
+          }} className="max-w-full">
           <ScenarioSelector
             isOpen={showScenarioSelector}
             onSelect={handleScenarioSelect}
@@ -295,8 +299,7 @@ Important instructions:
           <AiChat
             displayOptions={{ 
               width: "100%", 
-              height: "100%",
-              containerClassName: "bg-gray-100 dark:bg-gray-800"
+              height: "100%"
              }}
             adapter={customStreamingAdapter(configId)}
             personaOptions={{
