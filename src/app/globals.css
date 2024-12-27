@@ -18,8 +18,8 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Helvetica, sans-serif;
-  --nlux-ChatRoom--BackgroundColor: #060524;
 }
+
 
 html,
 body,
@@ -109,6 +109,7 @@ video {
   font: inherit;
   vertical-align: baseline;
 }
+
 /* HTML5 display-role reset for older browsers */
 article,
 aside,
@@ -123,17 +124,21 @@ nav,
 section {
   display: block;
 }
+
 body {
   line-height: 1;
 }
+
 ol,
 ul {
   list-style: none;
 }
+
 blockquote,
 q {
   quotes: none;
 }
+
 blockquote:before,
 blockquote:after,
 q:before,
@@ -141,6 +146,7 @@ q:after {
   content: "";
   content: none;
 }
+
 table {
   border-collapse: collapse;
   border-spacing: 0;
@@ -155,12 +161,34 @@ table {
   width: 100%;
 }
 
-.nlux-comp-composer > button:not(:disabled) {
+.nlux-comp-composer>button:not(:disabled) {
   color: #f8bbd0;
 }
 
-.nlux-comp-exceptionBox{
+.nlux-comp-exceptionBox {
   z-index: 999 !important;
 }
 
 
+.nlux-AiChat-root>.nlux-chatRoom-container {
+  background-color: #151515 !important;
+}
+
+.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--sent>.nlux-comp-message {
+  background-color: #323232 !important;
+  color: white !important;
+}
+
+.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--received>.nlux-comp-message {
+  background-color: #494949 !important;
+  color: white !important;
+}
+
+.nlux-comp-composer>textarea {
+  color: white !important;
+}
+
+.nlux-comp-composer>button:focus,
+.nlux-comp-composer>button:hover {
+  color: #f9ccdc !important;
+}
