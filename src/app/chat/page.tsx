@@ -24,7 +24,7 @@ function ChatComponent() {
     required: true,
     onUnauthenticated() {
       const currentUrl = window.location.pathname + window.location.search;
-      router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
+      router.push(`/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
     },
   });
   const [sizes, setSizes] = useState<(number | string)[]>(["300", "70%"]);
