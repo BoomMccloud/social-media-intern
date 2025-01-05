@@ -1,4 +1,4 @@
-import LoginButton from "@/components/LoginButton";
+import LoginOptions from "@/components/SocialLoginButtons";
 import { CheckOutlined } from "@ant-design/icons";
 
 export default function LoginPage() {
@@ -14,7 +14,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <LoginButton />
+        <LoginOptions />
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
