@@ -71,7 +71,7 @@ const HowItWorksSection = () => {
   );
 };
 
-const HeroSection = ({ onGetAccess }) => {
+const HeroSection = ({ onGetAccess }: { onGetAccess: () => void }) => {
   return (
     <section
       className="relative h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
