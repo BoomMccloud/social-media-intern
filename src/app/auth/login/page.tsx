@@ -7,7 +7,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-100">
-            Welcome to AI Playmates
+            Welcome to AI Playmate
           </h2>
           <p className="mt-2 text-sm text-gray-400">
             Find your perfect companion
@@ -21,9 +21,7 @@ export default function LoginPage() {
             <div className="w-full border-t border-gray-700" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-[#0f0f10] text-gray-400">
-              Why join AI Playmates?
-            </span>
+            <span className="px-2 bg-[#0f0f10] text-gray-400">Why join?</span>
           </div>
         </div>
 

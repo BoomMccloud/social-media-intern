@@ -16,7 +16,7 @@ export default function AboutPage() {
             About Us
           </h1>
           <p className="text-gray-400 text-lg">
-            AI Playmates is a generative AI platform that allows users to create
+            AI Playmate is a generative AI platform that allows users to create
             and interact generated characters for role playing purposes. Users
             can choose from a selection of pre-generated characters and
             scenarios or create their own character and scenarios.

@@ -75,7 +75,7 @@ const AppHeader = () => {
     <>
       <Header className="bg-[#0a0a0a] border-b border-gray-800 flex justify-between items-center px-4 fixed w-full z-50">
         <div className="text-xl font-bold flex flex-col sm:flex-row items-start sm:items-center">
-          <span className="text-[#F8BBD0]">AI Playmates</span>
+          <span className="text-[#F8BBD0]">AI Playmate</span>
           <span className="text-white sm:ml-2">Unleash Your Imagination</span>
         </div>
         <Button
