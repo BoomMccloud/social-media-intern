@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
-import { Button, Card, Collapse } from "antd";
+import React, { useState, useEffect } from "react";
+import { Button, Card, Collapse, Carousel } from "antd";
 import { CheckCircleOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { ModelConfig } from "@/types/chat";
 
 // const { Panel } = Collapse;
 
@@ -74,7 +75,7 @@ const HowItWorksSection = () => {
 const HeroSection = ({ onGetAccess }: { onGetAccess: () => void }) => {
   return (
     <section
-      className="relative h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
+      className="relative h-[70vh] flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage: `url('/isc.png')`,
         backgroundBlendMode: "overlay",
@@ -98,6 +99,126 @@ const HeroSection = ({ onGetAccess }: { onGetAccess: () => void }) => {
         >
           Get Free Early Access
         </Button>
+      </div>
+    </section>
+  );
+};
+
+const ModelsCarousel = () => {
+  const [models, setModels] = useState<ModelConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function fetchModels() {
+      try {
+        const response = await fetch("/api/model?type=page");
+        if (!response.ok) {
+          throw new Error("Failed to fetch models");
+        }
+        const data = await response.json();
+        setModels(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load models");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchModels();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-[#0a0a0a]">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#F8BBD0]">
+            Our Playmates
+          </h2>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F8BBD0]"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-20 bg-[#0a0a0a]">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#F8BBD0]">
+            Our Playmates
+          </h2>
+          <p className="text-center text-red-500">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  const carouselSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 2,
+    autoplay: true,
+    autoplaySpeed: 2000,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 640,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
+
+  return (
+    <section className="py-20 bg-[#0a0a0a]">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-[#F8BBD0]">
+          Our Playmates
+        </h2>
+        <p className="text-center text-gray-400 mb-8">
+          Discover AI companions tailored to your unique needs and preferences.
+        </p>
+
+        <div className="max-w-6xl mx-auto px-4">
+          <Carousel {...carouselSettings}>
+            {models.map((model) => (
+              <div key={model.configId} className="px-2">
+                <Card
+                  className="bg-[#1a1a1a] border-none hover:scale-105 transition-all duration-300 cursor-pointer mx-2"
+                  cover={
+                    <div className="relative pt-[133.33%]">
+                      <img
+                        alt={`${model.name} profile`}
+                        src={model.profilePicture}
+                        className="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
+                      />
+                    </div>
+                  }
+                >
+                  <h3 className="text-xl font-bold mb-2 text-[#F8BBD0]">
+                    {model.name}
+                  </h3>
+                  <p className="text-gray-400 line-clamp-2">
+                    {model.description}
+                  </p>
+                </Card>
+              </div>
+            ))}
+          </Carousel>
+        </div>
       </div>
     </section>
   );
@@ -219,10 +340,9 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0f0f10] text-white">
       <HeroSection onGetAccess={handleGetAccess} />
+      <ModelsCarousel />
       <ValuePropositionSection />
       <HowItWorksSection />
-
-      {/* Special Offer Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#F8BBD0]">
@@ -252,8 +372,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* CTA Block */}
       <section className="py-20 bg-[#0a0a0a]">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -273,7 +391,6 @@ export default function LandingPage() {
           </Button>
         </div>
       </section>
-
       <FAQSection />
     </div>
   );
