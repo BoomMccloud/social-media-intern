@@ -75,7 +75,7 @@ const HowItWorksSection = () => {
 const HeroSection = ({ onGetAccess }: { onGetAccess: () => void }) => {
   return (
     <section
-      className="relative h-[70vh] flex items-center justify-center bg-cover bg-center bg-no-repeat"
+      className="relative h-[45vh] flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{
         backgroundImage: `url('/isc.png')`,
         backgroundBlendMode: "overlay",
