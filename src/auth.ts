@@ -4,6 +4,9 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/utils/prisma";
 import type { NextAuthConfig } from "next-auth";
+import type { EmailConfig } from "next-auth/providers";
+import type { Theme } from "@auth/core/types";
+import { Resend } from "resend";
 
 declare module "next-auth" {
   interface Session {
@@ -22,6 +25,51 @@ if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("Missing Google OAuth Credentials");
 }
 
+if (!process.env.RESEND_API_KEY) {
+  throw new Error("Missing Resend API Key");
+}
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+async function sendVerificationRequest(params: {
+  identifier: string;
+  url: string;
+  expires: Date;
+  provider: EmailConfig;
+  token: string;
+  theme: Theme;
+  request: Request;
+}) {
+  const { identifier: email, url, provider, expires } = params;
+
+  if (!provider.from) {
+    throw new Error("Missing 'from' email address in provider configuration");
+  }
+
+  try {
+    const { error } = await resend.emails.send({
+      from: provider.from,
+      to: email,
+      subject: "Sign in to Your Application",
+      html: `
+        <body>
+          <h2>Sign in to Your Application</h2>
+          <p>Click the link below to sign in to your account.</p>
+          <p><a href="${url}">Sign in</a></p>
+          <p>If you didn't request this email, you can safely ignore it.</p>
+          <p>This link will expire on ${expires.toLocaleDateString()} at ${expires.toLocaleTimeString()}.</p>
+        </body>
+      `,
+    });
+
+    if (error) {
+      throw new Error(JSON.stringify(error));
+    }
+  } catch (error) {
+    throw new Error(`Error sending verification email: ${error}`);
+  }
+}
+
 const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -36,6 +84,15 @@ const authOptions: NextAuthConfig = {
         },
       },
     }),
+    {
+      id: "email",
+      type: "email",
+      name: "Email",
+      server: "",
+      from: process.env.EMAIL_FROM || "noreply@example.com",
+      maxAge: 24 * 60 * 60, // 24 hours
+      sendVerificationRequest,
+    },
   ],
   pages: {
     signIn: "/auth/login",
