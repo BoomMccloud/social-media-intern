@@ -192,3 +192,19 @@ table {
 .nlux-comp-composer>button:hover {
   color: #f9ccdc !important;
 }
+
+.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--received {
+  padding-right: 40px !important;
+
+  @media only screen and (max-width: 600px) {
+    padding-right: 0px !important;
+  }
+}
+
+.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--sent {
+  padding-left: 40px !important;
+
+  @media only screen and (max-width: 600px) {
+    padding-left: 0px !important;
+  }
+}
