@@ -2,7 +2,7 @@
 import { ChatMessage } from "@/types/chat";
 
 interface StreamObserver {
-  next: (content: string) => void;
+  next: (content: string, type?: 'message' | 'action') => void;
   error: (error: Error) => void;
   complete: () => void;
 }
@@ -14,22 +14,48 @@ interface StreamingAdapter {
   ) => Promise<void>;
 }
 
+let messageBuffer = '';
+let isProcessingActions = false;
+
 const processSSEChunk = (chunk: string, observer: StreamObserver) => {
-  // console.log("Processing SSE chunk:", chunk);
   const lines = chunk.split("\n");
   for (const line of lines) {
     if (!line.startsWith("data: ")) continue;
 
     const data = line.slice(6);
     if (data === "[DONE]") {
-      // console.log("Stream completed");
+      // If there's any remaining content in the buffer, send it
+      if (messageBuffer) {
+        observer.next(messageBuffer, isProcessingActions ? 'action' : 'message');
+      }
       return true;
     }
 
     try {
       const message: ChatMessage = JSON.parse(data);
-      // console.log("Processed message:", message);
-      observer.next(message.content);
+      
+      // Add the new content to our buffer
+      messageBuffer += message.content;
+      
+      // Check if we've received the separator
+      const separatorIndex = messageBuffer.indexOf('---');
+      
+      if (separatorIndex !== -1 && !isProcessingActions) {
+        // We found the separator for the first time
+        // Send everything before the separator as the main message
+        const mainMessage = messageBuffer.substring(0, separatorIndex).trim();
+        observer.next(mainMessage, 'message');
+        
+        // Start buffering the actions
+        messageBuffer = messageBuffer.substring(separatorIndex + 3).trim();
+        isProcessingActions = true;
+      } else if (isProcessingActions) {
+        // We're in the actions section, accumulate it
+        observer.next(message.content, 'action');
+      } else {
+        // We're still in the main message section
+        observer.next(message.content, 'message');
+      }
     } catch (e) {
       // console.warn("Failed to parse SSE message:", e);
     }
