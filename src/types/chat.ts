@@ -12,15 +12,8 @@ export interface ChatMessage extends Message {
 
 export interface ModelConfig {
   configId: string;
-  modelId: string;
   name: string;
-  systemPrompt: string;
-  temperature?: number;
-  maxTokens?: number;
-  isActive: boolean;
-  profilePicture: string;
-  avatar: string;
-  description: string;
+  llmConfig: LLMConfig;
 }
 
 export interface ChatSession {
@@ -28,4 +21,32 @@ export interface ChatSession {
   messages: ChatMessage[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface Conversation {
+  id: string;
+  messages: Message[];
+  modelConfig: LLMConfig;
+  createdAt: Date;
+}
+
+export interface LLMConfig {
+  configId: string;
+  modelId: string;
+  temperature: number;
+  maxTokens: number;
+}
+
+export interface LLMProvider {
+  generateResponse(
+    prompt: string,
+    config: LLMConfig,
+    systemPrompt: string
+  ): AsyncIterable<string>;
+
+  generateConversationResponse(
+    messages: Message[],
+    config: LLMConfig,
+    systemPrompt: string
+  ): AsyncIterable<string>;
 }

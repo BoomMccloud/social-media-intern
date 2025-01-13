@@ -20,7 +20,6 @@ body {
   font-family: Helvetica, sans-serif;
 }
 
-
 html,
 body,
 div,
@@ -161,7 +160,7 @@ table {
   width: 100%;
 }
 
-.nlux-comp-composer>button:not(:disabled) {
+.nlux-comp-composer > button:not(:disabled) {
   color: #f8bbd0;
 }
 
@@ -169,27 +168,28 @@ table {
   z-index: 999 !important;
 }
 
-
-.nlux-AiChat-root>.nlux-chatRoom-container {
+.nlux-AiChat-root > .nlux-chatRoom-container {
   background-color: #151515 !important;
 }
 
-.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--sent>.nlux-comp-message {
+.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--sent
+  > .nlux-comp-message {
   background-color: #323232 !important;
   color: white !important;
 }
 
-.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--received>.nlux-comp-message {
+.nlux-comp-chatItem.nlux-comp-chatItem--bubblesLayout.nlux-comp-chatItem--received
+  > .nlux-comp-message {
   background-color: #494949 !important;
   color: white !important;
 }
 
-.nlux-comp-composer>textarea {
+.nlux-comp-composer > textarea {
   color: white !important;
 }
 
-.nlux-comp-composer>button:focus,
-.nlux-comp-composer>button:hover {
+.nlux-comp-composer > button:focus,
+.nlux-comp-composer > button:hover {
   color: #f9ccdc !important;
 }
 

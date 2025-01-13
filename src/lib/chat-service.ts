@@ -1,7 +1,6 @@
 // src/lib/chat-service.ts
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { streamText } from "ai";
-import { createStreamableValue } from "ai/rsc";
 import { ModelConfig, Message } from "@/types/chat";
 
 export class ChatService {
@@ -21,20 +20,22 @@ export class ChatService {
 
   async continueConversation(messages: Message[], config: ModelConfig) {
     console.log("=== continueConversation called ===");
-    
+
     if (!config?.modelId) {
       throw new Error("Invalid model configuration");
     }
 
     try {
       // Extract the system message and other messages
-      const systemMessage = messages.find(msg => msg.role === 'system');
-      const conversationMessages = messages.filter(msg => msg.role !== 'system');
+      const systemMessage = messages.find((msg) => msg.role === "system");
+      const conversationMessages = messages.filter(
+        (msg) => msg.role !== "system"
+      );
 
       // Format conversation without the system message, and remove role prefixes
       const conversationText = conversationMessages
         .map((msg) => {
-          if (msg.role === 'user') {
+          if (msg.role === "user") {
             return `user: ${msg.content}`;
           } else {
             // For assistant messages, just include the content without role prefix
@@ -44,8 +45,11 @@ export class ChatService {
         .join("\n");
 
       // Add additional instruction about response format
-      const formatInstruction = "\nImportant: Respond naturally in first person without prefixing your responses with your name or 'assistant:'.";
-      const combinedSystemPrompt = `${config.systemPrompt}\n\n${systemMessage?.content || ''}${formatInstruction}`;
+      const formatInstruction =
+        "\nImportant: Respond naturally in first person without prefixing your responses with your name or 'assistant:'.";
+      const combinedSystemPrompt = `${config.systemPrompt}\n\n${
+        systemMessage?.content || ""
+      }${formatInstruction}`;
 
       console.log("Combined system prompt:", combinedSystemPrompt);
       console.log("Conversation text:", conversationText);

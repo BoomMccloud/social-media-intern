@@ -22,7 +22,8 @@ interface CategoryTraits {
   category: string;
   traits: string[];
 }
-interface CharacterInfo {
+
+export interface CharacterInfo {
   occupation: string;
   appearance: Appearance;
   environment: string[];
