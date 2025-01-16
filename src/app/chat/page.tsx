@@ -10,6 +10,7 @@ import { ChatPanel } from "@/app/chat/ChatPanel";
 import { useRouter, useSearchParams } from "next/navigation";
 import { WechatWorkOutlined } from "@ant-design/icons";
 import { Character } from "@/types/character";
+import { useChatStore } from "@/store/chat-store";
 
 const { useBreakpoint } = Grid;
 
@@ -18,6 +19,13 @@ function ChatComponent() {
   const searchParams = useSearchParams();
   const characterId = searchParams.get("characterId");
   const hasCharacterId = characterId != null;
+  const [isLoading, setIsLoading] = useState(false);
+  const { clearSession } = useChatStore();
+  const currentCharacterId = searchParams.get("characterId");
+  const llmConfigId = searchParams.get("configId");
+  const sessionId = currentCharacterId
+    ? `${currentCharacterId}-${llmConfigId || "default"}`
+    : null;
 
   const { status } = useSession({
     required: true,
@@ -43,7 +51,20 @@ function ChatComponent() {
   const selectedCharacter = characters.find((char) => char.id === characterId);
   const showOnlyChat = !md && hasCharacterId;
 
+  // Then modify handleCharacterClick:
   const handleCharacterClick = (characterId: string) => {
+    // Don't do anything if clicking the same character
+    if (characterId === currentCharacterId) return;
+
+    // Set loading state while we switch
+    setIsLoading(true);
+
+    // Clear current chat panel
+    if (sessionId) {
+      clearSession(sessionId);
+    }
+
+    // Navigate to new character
     router.push(`/chat?characterId=${characterId}`);
   };
 

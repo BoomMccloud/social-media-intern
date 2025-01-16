@@ -1,5 +1,7 @@
 // src/app/chat/stream.ts
 import { ChatMessage, LLMConfig, Message } from "@/types/chat";
+import { generatePrompt } from "@/lib/generatePrompt";
+import { Character } from "@/types/character";
 
 export interface StreamObserver {
   next: (content: string) => void;
@@ -14,32 +16,48 @@ interface ConfigWithSystemPrompt {
   systemPrompt: string;
 }
 
-const getAvailableConfigs = (): ConfigWithSystemPrompt[] => {
+async function fetchCharacter(characterId: string): Promise<Character> {
+  const response = await fetch(`/api/listCharacters/${characterId}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch character: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+const getAvailableConfigs = async (
+  characterId: string
+): Promise<ConfigWithSystemPrompt[]> => {
+  const character = await fetchCharacter(characterId);
+  const systemPrompt = generatePrompt(characterId, [character]); // Pass as single-element array
+
   return [
     {
       llmConfig: {
         configId: DEFAULT_CONFIG_ID,
-        modelId: "meta-llama/llama-3.2-1b-instruct",
+        modelId: "mistralai/mistral-nemo",
         temperature: 0.6,
-        maxTokens: 1000,
+        maxTokens: 1500,
       },
-      systemPrompt: "You are a helpful AI assistant.",
+      systemPrompt,
     },
   ];
 };
 
-const selectConfig = (
+const selectConfig = async (
+  characterId: string,
   configId: string | undefined,
-  providedConfig: LLMConfig | null
-): ConfigWithSystemPrompt => {
+  providedConfig?: LLMConfig
+): Promise<ConfigWithSystemPrompt> => {
+  const character = await fetchCharacter(characterId);
+
   if (providedConfig) {
     return {
       llmConfig: providedConfig,
-      systemPrompt: "You are a helpful AI assistant.",
+      systemPrompt: generatePrompt(characterId, [character]),
     };
   }
 
-  const configs = getAvailableConfigs();
+  const configs = await getAvailableConfigs(characterId);
 
   if (configId) {
     const requested = configs.find(
@@ -83,8 +101,8 @@ const processSSEChunk = (chunk: string, observer: StreamObserver): boolean => {
 };
 
 export const createStreamingAdapter = (
-  configId: string = DEFAULT_CONFIG_ID,
-  llmConfig: LLMConfig | null = null
+  characterId: string,
+  configIdOrConfig?: string | LLMConfig
 ) => {
   return {
     streamText: async (messages: Message[], observer: StreamObserver) => {
@@ -92,14 +110,16 @@ export const createStreamingAdapter = (
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       try {
-        const selectedConfig = selectConfig(configId, llmConfig);
+        const selectedConfig = await selectConfig(
+          characterId,
+          typeof configIdOrConfig === "string" ? configIdOrConfig : undefined,
+          typeof configIdOrConfig === "object" ? configIdOrConfig : undefined
+        );
 
-        // Log the messages and config being sent to API
         console.log(
           "Messages being sent to API:",
           messages instanceof Array ? messages : formatMessagesForAPI(messages)
         );
-
         console.log("Selected config:", selectedConfig);
 
         const response = await fetch("/api/handleMessages", {

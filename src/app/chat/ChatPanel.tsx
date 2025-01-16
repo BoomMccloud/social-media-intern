@@ -1,10 +1,10 @@
 import { AiChat, ChatItem } from "@nlux/react";
-import { Skeleton } from "antd";
+// import { Skeleton } from "antd";
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createStreamingAdapter, DEFAULT_CONFIG_ID } from "@/app/chat/stream";
-import { ChatMessage, LLMConfig } from "@/types/chat";
+import { ChatMessage } from "@/types/chat";
 import { useChatStore } from "@/store/chat-store";
 import { ScenarioSelector } from "@/components/ScenarioSelector";
 import { Scenario } from "@/types/scenario";
@@ -28,19 +28,39 @@ const ErrorState = ({
   </div>
 );
 
+const LoadingState = () => (
+  <div className="flex justify-center h-screen items-center p-2 md:p-4 w-full">
+    <div className="flex flex-col items-center gap-4">
+      <div className="animate-pulse flex space-x-4">
+        <div className="rounded-full bg-slate-200 h-10 w-10"></div>
+        <div className="flex-1 space-y-6 py-1">
+          <div className="h-2 bg-slate-200 rounded"></div>
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="h-2 bg-slate-200 rounded col-span-2"></div>
+              <div className="h-2 bg-slate-200 rounded col-span-1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="text-gray-500">Loading conversation...</div>
+    </div>
+  </div>
+);
+
 export const ChatPanel = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const characterId = searchParams.get("characterId");
-  const llmConfigId = searchParams.get("configId"); // matches LLMConfig.configId
+  const llmConfigId = searchParams.get("configId");
 
   const [showScenarioSelector, setShowScenarioSelector] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
     null
   );
   const [character, setCharacter] = useState<Character | null>(null);
-  const [llmConfig, setLLMConfig] = useState<LLMConfig | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { status, data: session } = useSession({
     required: true,
@@ -53,6 +73,7 @@ export const ChatPanel = () => {
   // Fetch character data
   useEffect(() => {
     if (characterId) {
+      setIsLoading(true);
       fetch(`/api/listCharacters/${characterId}`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch character data");
@@ -60,29 +81,20 @@ export const ChatPanel = () => {
         })
         .then((character: Character) => {
           setCharacter(character);
+          if (sessionId) {
+            // Clear any existing messages for clean slate
+            clearSession(sessionId);
+          }
         })
         .catch((error) => {
           console.error("Error fetching character:", error);
           setError(error);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }, [characterId]);
-
-  // Only fetch LLM configuration if configId is provided
-  useEffect(() => {
-    if (llmConfigId) {
-      fetch(`/api/listLLMs/${llmConfigId}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch LLM configuration");
-          return res.json();
-        })
-        .then((config: LLMConfig) => setLLMConfig(config))
-        .catch((error) => {
-          console.error("Error fetching LLM config:", error);
-          setError(error);
-        });
-    }
-  }, [llmConfigId]);
 
   const { addMessage, getMessages, clearSession } = useChatStore();
   const sessionId = useMemo(
@@ -104,7 +116,7 @@ export const ChatPanel = () => {
   }, [sessionId, clearSession]);
 
   const handleScenarioSelect = async (scenario: Scenario) => {
-    if (sessionId && character) {
+    if (sessionId && character && characterId) {
       clearSession(sessionId);
       setSelectedScenario(scenario);
       setShowScenarioSelector(false);
@@ -119,10 +131,7 @@ export const ChatPanel = () => {
       };
 
       try {
-        const adapter = createStreamingAdapter(
-          llmConfigId || DEFAULT_CONFIG_ID,
-          llmConfig
-        );
+        const adapter = createStreamingAdapter(characterId);
         let assistantResponse = "";
 
         await new Promise((resolve, reject) => {
@@ -154,10 +163,11 @@ export const ChatPanel = () => {
 
   const customStreamingAdapter = useCallback(
     (sessionId: string | null) => {
-      const baseAdapter = createStreamingAdapter(
-        llmConfigId || DEFAULT_CONFIG_ID,
-        llmConfig
-      );
+      if (!characterId) {
+        throw new Error("Character ID is required");
+      }
+
+      const baseAdapter = createStreamingAdapter(characterId);
 
       return {
         streamText: async (text: string, observer: any) => {
@@ -168,14 +178,11 @@ export const ChatPanel = () => {
             createdAt: new Date(),
           };
 
-          // Add user message to the store
           if (sessionId) {
             addMessage(sessionId, userMessage);
           }
 
-          // Get current messages - no need to add userMessage again
           const messagesToSend = sessionId ? getMessages(sessionId) : [];
-
           let accumulatedContent = "";
 
           return baseAdapter.streamText(messagesToSend, {
@@ -203,12 +210,10 @@ export const ChatPanel = () => {
         },
       };
     },
-    [sessionId, llmConfig, addMessage, getMessages, llmConfigId]
+    [sessionId, addMessage, getMessages, characterId]
   );
 
   const initialConversation = useMemo<ChatItem[]>(() => {
-    // Debug point 4: Check messages being transformed
-    console.log("All messages:", messages);
     return messages
       .filter((msg) => !msg.hidden && msg.role !== "system")
       .map(({ role, content: message }) => ({ role, message }));
@@ -218,22 +223,8 @@ export const ChatPanel = () => {
     return <div>Select a character</div>;
   }
 
-  // Only wait for character to load, not llmConfig
-  if (status === "loading" || (!error && !character)) {
-    return (
-      <div
-        className="flex flex-col items-stretch w-full gap-2"
-        style={{ maxWidth: 600 }}
-      >
-        <Skeleton.Avatar
-          className="text-center"
-          style={{ height: 60, width: 60 }}
-        />
-        <Skeleton.Node style={{ height: 16, width: "100%" }} />
-        <Skeleton.Node style={{ height: 16, width: "90%" }} />
-        <Skeleton.Node style={{ height: 16, width: "70%" }} />
-      </div>
-    );
+  if (status === "loading" || (!error && !character) || isLoading) {
+    return <LoadingState />;
   }
 
   if (error) {
@@ -277,18 +268,20 @@ export const ChatPanel = () => {
           }}
           initialConversation={initialConversation}
         />
-        <button
-          onClick={() => setShowScenarioSelector(true)}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors mr-2"
-        >
-          Change Scenario
-        </button>
-        <button
-          onClick={handleClearChat}
-          className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-        >
-          Clear Chat History
-        </button>
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => setShowScenarioSelector(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Change Scenario
+          </button>
+          <button
+            onClick={handleClearChat}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          >
+            Clear Chat History
+          </button>
+        </div>
       </div>
     </div>
   );
