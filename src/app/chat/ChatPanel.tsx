@@ -161,7 +161,6 @@ export const ChatPanel = () => {
 
       return {
         streamText: async (text: string, observer: any) => {
-          // Create the user message
           const userMessage: ChatMessage = {
             id: crypto.randomUUID(),
             role: "user",
@@ -174,9 +173,8 @@ export const ChatPanel = () => {
             addMessage(sessionId, userMessage);
           }
 
-          // Get current messages and add the new user message
-          const currentMessages = sessionId ? getMessages(sessionId) : [];
-          const messagesToSend = [...currentMessages, userMessage];
+          // Get current messages - no need to add userMessage again
+          const messagesToSend = sessionId ? getMessages(sessionId) : [];
 
           let accumulatedContent = "";
 
