@@ -1,19 +1,18 @@
 "use client";
-// import Link from "next/link";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
-import { ModelData } from "@/app/api/model_bak/route";
-// import AppHeader from '@/components/Header';
 import AppFooter from "@/components/Footer";
 import HeroCarousel from "@/components/HeroCarousel";
+import { CharacterListResponse } from "@/types/character-list";
 
 const tags = ["man", "woman", "other"];
 
 export default function Home() {
-  const [models, setModels] = useState<ModelData[]>([]);
+  const [characters, setCharacters] = useState<CharacterListResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -21,43 +20,47 @@ export default function Home() {
   const { status } = useSession();
 
   useEffect(() => {
-    async function fetchModels() {
+    async function fetchCharacters() {
       try {
-        const response = await fetch("/api/model?type=page");
+        const response = await fetch("/api/listCharacters");
 
         if (!response.ok) {
-          throw new Error("Failed to fetch models");
+          throw new Error("Failed to fetch characters");
         }
         const data = await response.json();
-
-        setModels(data);
+        setCharacters(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load models");
+        setError(
+          err instanceof Error ? err.message : "Failed to load characters"
+        );
       } finally {
         setLoading(false);
       }
     }
 
-    fetchModels();
+    fetchCharacters();
   }, []);
 
-  const handleModelClick = (configId: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleCharacterClick =
+    (characterId: string) => (e: React.MouseEvent) => {
+      e.preventDefault();
 
-    if (status === "authenticated") {
-      // If user is logged in, go directly to chat
-      router.push(`/chat?configId=${configId}`);
-    } else {
-      // If user is not logged in, redirect to login with callback
-      const callbackUrl = `/chat?configId=${configId}`;
-      router.push(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-    }
-  };
+      if (status === "authenticated") {
+        // If user is logged in, go directly to chat
+        router.push(`/chat?characterId=${characterId}`);
+      } else {
+        // If user is not logged in, redirect to login with callback
+        const callbackUrl = `/chat?characterId=${characterId}`;
+        router.push(
+          `/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+        );
+      }
+    };
 
   if (loading) {
     return (
       <div className="p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] flex justify-center items-center min-h-screen">
-        <div className="text-xl">Loading available models...</div>
+        <div className="text-xl">Loading available characters...</div>
       </div>
     );
   }
@@ -72,25 +75,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f10]">
-      {/* <AppHeader /> */}
-
-      {/* Hero Section */}
       <section className="w-full">
         <HeroCarousel />
       </section>
 
-      {/* Models Section */}
       <section className="flex-grow container mx-auto px-4 py-12">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-[#F8BBD0] mb-4">
-            Explore Our Models
+            Explore Our Characters
           </h2>
           <p className="text-gray-400 mb-6">
             Discover AI companions tailored to your unique needs and
             preferences. Engage in conversations about any topic of your desire.
           </p>
 
-          {/* Filters */}
           <div className="flex gap-2 items-center p-4 bg-[#0a0a0a] rounded-lg">
             <div className="text-gray-300">
               <FilterOutlined className="mr-1" />
@@ -102,7 +100,7 @@ export default function Home() {
                 color="primary"
                 variant={selectedTags.includes(tag) ? "solid" : "outlined"}
                 onClick={() => {
-                  setSelectedTags((prevSelectedTags: string[]) => {
+                  setSelectedTags((prevSelectedTags) => {
                     if (prevSelectedTags.includes(tag)) {
                       return prevSelectedTags.filter((t) => t !== tag);
                     } else {
@@ -117,34 +115,33 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Model Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {models
-            .filter((model) => {
+          {characters
+            .filter((character) => {
               if (selectedTags.length === 0) return true;
               return (
-                model.tags &&
-                model.tags.some((tag) => selectedTags.includes(tag))
+                character.tags &&
+                character.tags.some((tag) => selectedTags.includes(tag))
               );
             })
-            .map((model) => (
+            .map((character) => (
               <div
-                key={model.configId}
+                key={character.id}
                 className="bg-[#0a0a0a] rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg"
-                onClick={handleModelClick(model.configId)}
+                onClick={handleCharacterClick(character.id)}
               >
                 <div className="relative">
                   <img
-                    alt={`${model.name} profile`}
-                    src={model.profilePicture}
+                    alt={`${character.name} profile`}
+                    src={character.profilePicture}
                     className="w-full aspect-[3/4] object-cover"
                   />
                   <div className="p-4">
                     <h3 className="text-xl font-semibold text-[#F8BBD0] mb-2">
-                      {model.name}
+                      {character.name}
                     </h3>
                     <p className="text-gray-400 line-clamp-2">
-                      {model.description}
+                      {character.displayDescription}
                     </p>
                   </div>
                 </div>

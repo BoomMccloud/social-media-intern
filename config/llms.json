@@ -9,7 +9,7 @@
     "configId": "config-6bbb89e6-9488-4e3d-9716-a3ef8967da2c",
     "modelId": "microsoft/wizardlm-2-8x22b",
     "temperature": 0.6,
-    "maxTokens": 600
+    "maxTokens": 1000
   },
   {
     "configId": "config-70f14abe-88f3-45f1-86ef-8299663822b2",

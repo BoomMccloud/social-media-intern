@@ -34,7 +34,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       style={{
         position: "fixed",
         right: "25px",
-        bottom: "100px",
+        bottom: "125px",
       }}
     >
       <div

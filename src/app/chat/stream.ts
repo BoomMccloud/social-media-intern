@@ -34,7 +34,7 @@ const getAvailableConfigs = async (
     {
       llmConfig: {
         configId: DEFAULT_CONFIG_ID,
-        modelId: "mistralai/mistral-nemo",
+        modelId: "microsoft/wizardlm-2-8x22b",
         temperature: 0.6,
         maxTokens: 1500,
       },
