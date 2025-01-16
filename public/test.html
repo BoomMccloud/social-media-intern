@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test</title>
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        #messages {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 200px;
+        }
+
+        button {
+            margin: 10px 0;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chat Test</h1>
+    <div id="messages"></div>
+    <button onclick="testChat()">Test Simple Chat</button>
+    <button onclick="testStream()">Test Chat Stream</button>
+
+    <script>
+        async function testChat() {
+            const messages = document.getElementById('messages');
+            messages.innerHTML = 'Testing chat...';
+
+            try {
+                const response = await fetch('/api/test-chat');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') {
+                                messages.innerHTML += '<br>Stream completed';
+                                return;
+                            }
+                            try {
+                                const parsed = JSON.parse(data);
+                                messages.innerHTML += `<br>${parsed.content}`;
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                messages.innerHTML = `Error: ${error.message}`;
+                console.error('Test failed:', error);
+            }
+        }
+
+        async function testStream() {
+            const messages = document.getElementById('messages');
+            messages.innerHTML = 'Testing chat stream...';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                id: "1",
+                                role: "system",
+                                content: "You are a helpful AI assistant.",
+                                createdAt: new Date()
+                            },
+                            {
+                                id: "2",
+                                role: "user",
+                                content: "What is the capital of France?",
+                                createdAt: new Date()
+                            }
+                        ]
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') {
+                                messages.innerHTML += '<br>Stream completed';
+                                return;
+                            }
+                            try {
+                                const parsed = JSON.parse(data);
+                                messages.innerHTML += `<br>${parsed.content}`;
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                messages.innerHTML = `Error: ${error.message}`;
+                console.error('Test failed:', error);
+            }
+        }
+    </script>
+</body>
+
+</html>

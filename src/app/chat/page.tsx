@@ -6,19 +6,18 @@ import { Avatar, Breadcrumb, Divider, Grid, Skeleton, Splitter } from "antd";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { Suspense, useState } from "react";
-const { useBreakpoint } = Grid;
-
 import { ChatPanel } from "@/app/chat/ChatPanel";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HomeOutlined, WechatWorkOutlined } from "@ant-design/icons";
-import { useChatModel } from "@/hooks/useChatModel";
-import { ModelData } from "@/app/api/model/route";
+import { WechatWorkOutlined } from "@ant-design/icons";
+import { Character } from "@/types/character";
+
+const { useBreakpoint } = Grid;
 
 function ChatComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const configId = searchParams.get("configId");
-  const hasConfigId = configId != null;
+  const characterId = searchParams.get("characterId");
+  const hasCharacterId = characterId != null;
 
   const { status } = useSession({
     required: true,
@@ -29,25 +28,23 @@ function ChatComponent() {
   });
   const [sizes, setSizes] = useState<(number | string)[]>(["300", "70%"]);
 
-  const { xs, sm, md } = useBreakpoint();
+  const { md } = useBreakpoint();
 
-  const { data: conversations = [], isLoading: conversationLoading } = useQuery<
-    ModelData[]
+  const { data: characters = [], isLoading: charactersLoading } = useQuery<
+    Character[]
   >({
-    queryKey: ["models"],
+    queryKey: ["characters"],
     queryFn: async () => {
-      const { data } = await axios.get<ModelData[]>(`/api/model?type=page`);
+      const { data } = await axios.get<Character[]>("/api/listCharacters");
       return data;
     },
   });
 
-  const { model } = useChatModel(configId, status === "authenticated");
+  const selectedCharacter = characters.find((char) => char.id === characterId);
+  const showOnlyChat = !md && hasCharacterId;
 
-  const showOnlyChat = !md && hasConfigId;
-
-  const handleModelClick = (modelConfigId: string) => {
-    // Instead of directly navigating, update the URL with the configId
-    router.push(`/chat?configId=${modelConfigId}`);
+  const handleCharacterClick = (characterId: string) => {
+    router.push(`/chat?characterId=${characterId}`);
   };
 
   return (
@@ -61,14 +58,13 @@ function ChatComponent() {
         } else if (sizes[0] < 72) {
           newSizes[0] = 72;
         }
-
         setSizes(newSizes);
       }}
     >
-      {(md || !hasConfigId) && (
+      {(md || !hasCharacterId) && (
         <Splitter.Panel size={sizes[0]}>
           <nav className="font-medium">
-            {conversationLoading || status === "loading" ? (
+            {charactersLoading || status === "loading" ? (
               <>
                 <div className="flex items-center gap-3 px-3 py-2">
                   <Skeleton.Avatar active style={{ width: 48, height: 48 }} />
@@ -81,28 +77,28 @@ function ChatComponent() {
                 <Divider style={{ margin: "0" }} />
               </>
             ) : (
-              conversations.map((conversation) => (
-                <div key={conversation.configId}>
+              characters.map((character) => (
+                <div key={character.id}>
                   <a
                     className={`${
-                      conversation.configId === configId
+                      character.id === characterId
                         ? "text-primary bg-[#222222]"
                         : "bg-transparent"
                     } flex items-center h-20 gap-3 px-3 py-2 transition-all hover:text-primary cursor-pointer hover:bg-[#222222]`}
-                    onClick={() => handleModelClick(conversation.configId)}
+                    onClick={() => handleCharacterClick(character.id)}
                   >
                     <Avatar
                       className="flex-shrink-0"
                       size={48}
-                      src={conversation.profilePicture as string}
+                      src={character.profilePicture}
                     />
                     <div className="flex flex-col gap-0.5">
                       <div className="w-full">
                         <h5 className="font-semibold line-clamp-1">
-                          {conversation.name}
+                          {character.name}
                         </h5>
                         <p className="text-sm text-gray-400 line-clamp-2">
-                          {conversation.description}
+                          {character.displayDescription}
                         </p>
                       </div>
                     </div>
@@ -133,7 +129,7 @@ function ChatComponent() {
                     href: "",
                     title: (
                       <>
-                        <span>{model?.name}</span>
+                        <span>{selectedCharacter?.name}</span>
                       </>
                     ),
                   },
@@ -141,7 +137,6 @@ function ChatComponent() {
               />
             </div>
           )}
-
           <ChatPanel />
         </Splitter.Panel>
       )}
@@ -159,6 +154,6 @@ export default function Chat() {
 
 const LoadingState = () => (
   <div className="flex justify-center w-screen h-screen items-center">
-    <div className="text-xl">Loading available models...</div>
+    <div className="text-xl">Loading available characters...</div>
   </div>
 );

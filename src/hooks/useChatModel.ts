@@ -1,5 +1,5 @@
 // hooks/useChatModel.ts
-import { ModelData } from "@/app/api/model/route";
+import { Character } from "@/types/character";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -11,13 +11,27 @@ export function useChatModel(
     data: model,
     error,
     isLoading: loading,
-  } = useQuery<ModelData>({
-    queryKey: [configId],
+  } = useQuery<Character>({
+    queryKey: ["character", configId],
     queryFn: async () => {
-      const { data } = await axios.get<ModelData>(
-        `/api/model?type=chat&configId=${configId}`
+      // First fetch the list of characters
+      const { data: characters } = await axios.get<Character[]>(
+        `/api/listCharacters`
       );
-      return data;
+
+      // Find the character that matches the configId
+      const character = characters.find((char) => char.id === configId);
+
+      if (!character) {
+        throw new Error(`Character with ID ${configId} not found`);
+      }
+
+      // Transform the character data to match the expected model interface
+      return {
+        ...character,
+        description: character.displayDescription,
+        systemPrompt: "", // You might want to generate this based on characterInfo
+      };
     },
     enabled: isAuthenticated && !!configId,
   });

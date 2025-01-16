@@ -1,79 +1,125 @@
 // src/app/chat/stream.ts
-import { ChatMessage } from "@/types/chat";
+import { ChatMessage, LLMConfig, Message } from "@/types/chat";
 
-interface StreamObserver {
+export interface StreamObserver {
   next: (content: string) => void;
   error: (error: Error) => void;
   complete: () => void;
 }
 
-interface StreamingAdapter {
-  streamText: (
-    messages: ChatMessage[],
-    observer: StreamObserver
-  ) => Promise<void>;
+export const DEFAULT_CONFIG_ID = "config-987fcdeb-51d3-12a4-b456-426614174001";
+
+interface ConfigWithSystemPrompt {
+  llmConfig: LLMConfig;
+  systemPrompt: string;
 }
 
-const processSSEChunk = (chunk: string, observer: StreamObserver) => {
-  // console.log("Processing SSE chunk:", chunk);
+const getAvailableConfigs = (): ConfigWithSystemPrompt[] => {
+  return [
+    {
+      llmConfig: {
+        configId: DEFAULT_CONFIG_ID,
+        modelId: "meta-llama/llama-3.2-1b-instruct",
+        temperature: 0.6,
+        maxTokens: 1000,
+      },
+      systemPrompt: "You are a helpful AI assistant.",
+    },
+  ];
+};
+
+const selectConfig = (
+  configId: string | undefined,
+  providedConfig: LLMConfig | null
+): ConfigWithSystemPrompt => {
+  if (providedConfig) {
+    return {
+      llmConfig: providedConfig,
+      systemPrompt: "You are a helpful AI assistant.",
+    };
+  }
+
+  const configs = getAvailableConfigs();
+
+  if (configId) {
+    const requested = configs.find(
+      (config) => config.llmConfig.configId === configId
+    );
+    if (requested) return requested;
+  }
+
+  return configs[0];
+};
+
+const formatMessagesForAPI = (messages: ChatMessage[]): Message[] => {
+  return messages.map((msg) => ({
+    role: msg.role,
+    content: msg.content,
+  }));
+};
+
+const processSSEChunk = (chunk: string, observer: StreamObserver): boolean => {
   const lines = chunk.split("\n");
   for (const line of lines) {
     if (!line.startsWith("data: ")) continue;
 
     const data = line.slice(6);
     if (data === "[DONE]") {
-      // console.log("Stream completed");
       return true;
     }
 
     try {
       const message: ChatMessage = JSON.parse(data);
-      // console.log("Processed message:", message);
       observer.next(message.content);
-    } catch (e) {
-      // console.warn("Failed to parse SSE message:", e);
+    } catch (error) {
+      console.warn("Failed to parse SSE message:", error);
+      observer.error(
+        error instanceof Error ? error : new Error("Failed to parse message")
+      );
+      return true;
     }
   }
   return false;
 };
 
-const formatMessagesForAPI = (messages: ChatMessage[]): ChatMessage[] => {
-  return messages.map((msg) => ({
-    role: msg.role,
-    content: msg.content,
-    id: msg.id,
-    createdAt: msg.createdAt,
-  }));
-};
-
 export const createStreamingAdapter = (
-  configId?: string | null
-): StreamingAdapter => {
-  console.log("Creating streaming adapter with configId:", configId);
-
+  configId: string = DEFAULT_CONFIG_ID,
+  llmConfig: LLMConfig | null = null
+) => {
   return {
-    streamText: async (messages: ChatMessage[], observer: StreamObserver) => {
-      console.log("Stream text called with messages:", messages);
+    streamText: async (messages: Message[], observer: StreamObserver) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       try {
-        console.log("Sending messages to API:", messages);
+        const selectedConfig = selectConfig(configId, llmConfig);
 
-        const response = await fetch("/api/chat", {
+        // Log the messages and config being sent to API
+        console.log(
+          "Messages being sent to API:",
+          messages instanceof Array ? messages : formatMessagesForAPI(messages)
+        );
+
+        console.log("Selected config:", selectedConfig);
+
+        const response = await fetch("/api/handleMessages", {
           method: "POST",
           body: JSON.stringify({
-            messages: formatMessagesForAPI(messages),
-            configId,
+            messages:
+              messages instanceof Array
+                ? messages
+                : formatMessagesForAPI(messages),
+            config: selectedConfig,
           }),
           headers: { "Content-Type": "application/json" },
           signal: controller.signal,
         });
 
-        console.log("API response status:", response.status);
-
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || `HTTP error! status: ${response.status}`
+          );
         }
 
         const reader = response.body?.getReader();
@@ -83,10 +129,7 @@ export const createStreamingAdapter = (
 
         while (true) {
           const { value, done } = await reader.read();
-          if (done) {
-            console.log("Reader completed");
-            break;
-          }
+          if (done) break;
 
           const chunk = textDecoder.decode(value);
           const isDone = processSSEChunk(chunk, observer);
@@ -95,14 +138,13 @@ export const createStreamingAdapter = (
 
         observer.complete();
       } catch (error) {
-        console.error("Stream error:", error);
-        if (error instanceof Error) {
-          observer.error(
-            error.name === "AbortError" ? new Error("Request timeout") : error
-          );
-        } else {
-          observer.error(new Error(String(error)));
-        }
+        observer.error(
+          error instanceof Error && error.name === "AbortError"
+            ? new Error("Request timeout")
+            : error instanceof Error
+            ? error
+            : new Error(String(error))
+        );
       } finally {
         clearTimeout(timeoutId);
       }

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { Button, Card, Collapse, Carousel } from "antd";
 import { CheckCircleOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { ModelConfig } from "@/types/chat";
+// import { ModelConfig } from "@/types/chat";
+import { CharacterListResponse } from "@/types/character-list";
 
 // const { Panel } = Collapse;
 
@@ -105,27 +106,29 @@ const HeroSection = ({ onGetAccess }: { onGetAccess: () => void }) => {
 };
 
 const ModelsCarousel = () => {
-  const [models, setModels] = useState<ModelConfig[]>([]);
+  const [characters, setCharacters] = useState<CharacterListResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchModels() {
+    async function fetchCharacters() {
       try {
-        const response = await fetch("/api/model?type=page");
+        const response = await fetch("/api/listCharacters");
         if (!response.ok) {
-          throw new Error("Failed to fetch models");
+          throw new Error("Failed to fetch characters");
         }
         const data = await response.json();
-        setModels(data);
+        setCharacters(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load models");
+        setError(
+          err instanceof Error ? err.message : "Failed to load characters"
+        );
       } finally {
         setLoading(false);
       }
     }
 
-    fetchModels();
+    fetchCharacters();
   }, []);
 
   if (loading) {
@@ -194,25 +197,25 @@ const ModelsCarousel = () => {
 
         <div className="max-w-6xl mx-auto px-4">
           <Carousel {...carouselSettings}>
-            {models.map((model) => (
-              <div key={model.configId} className="px-2">
+            {characters.map((character) => (
+              <div key={character.id} className="px-2">
                 <Card
                   className="bg-[#1a1a1a] border-none hover:scale-105 transition-all duration-300 cursor-pointer mx-2"
                   cover={
                     <div className="relative pt-[133.33%]">
                       <img
-                        alt={`${model.name} profile`}
-                        src={model.profilePicture}
+                        alt={`${character.name} profile`}
+                        src={character.profilePicture}
                         className="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
                       />
                     </div>
                   }
                 >
                   <h3 className="text-xl font-bold mb-2 text-[#F8BBD0]">
-                    {model.name}
+                    {character.name}
                   </h3>
                   <p className="text-gray-400 line-clamp-2">
-                    {model.description}
+                    {character.displayDescription}
                   </p>
                 </Card>
               </div>
