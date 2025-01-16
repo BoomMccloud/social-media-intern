@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
-import { ModelData } from "@/app/api/model/route";
+import { ModelData } from "@/app/api/model_bak/route";
 // import AppHeader from '@/components/Header';
-import AppFooter from '@/components/Footer';
-import HeroCarousel from '@/components/HeroCarousel';
+import AppFooter from "@/components/Footer";
+import HeroCarousel from "@/components/HeroCarousel";
 
 const tags = ["man", "woman", "other"];
 
@@ -73,7 +73,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f10]">
       {/* <AppHeader /> */}
-      
+
       {/* Hero Section */}
       <section className="w-full">
         <HeroCarousel />
@@ -82,11 +82,14 @@ export default function Home() {
       {/* Models Section */}
       <section className="flex-grow container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-[#F8BBD0] mb-4">Explore Our Models</h2>
+          <h2 className="text-3xl font-bold text-[#F8BBD0] mb-4">
+            Explore Our Models
+          </h2>
           <p className="text-gray-400 mb-6">
-            Discover AI companions tailored to your unique needs and preferences. Engage in conversations about any topic of your desire.
+            Discover AI companions tailored to your unique needs and
+            preferences. Engage in conversations about any topic of your desire.
           </p>
-          
+
           {/* Filters */}
           <div className="flex gap-2 items-center p-4 bg-[#0a0a0a] rounded-lg">
             <div className="text-gray-300">
@@ -120,7 +123,8 @@ export default function Home() {
             .filter((model) => {
               if (selectedTags.length === 0) return true;
               return (
-                model.tags && model.tags.some((tag) => selectedTags.includes(tag))
+                model.tags &&
+                model.tags.some((tag) => selectedTags.includes(tag))
               );
             })
             .map((model) => (

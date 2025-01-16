@@ -9,6 +9,7 @@ import { useChatStore } from "@/store/chat-store";
 import { ScenarioSelector } from "@/components/ScenarioSelector";
 import { Scenario } from "@/types/scenario";
 import { Character } from "@/types/character";
+import FloatingActionButton from "@/components/FloatingActionButton";
 
 const ErrorState = ({
   error,
@@ -268,20 +269,10 @@ export const ChatPanel = () => {
           }}
           initialConversation={initialConversation}
         />
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={() => setShowScenarioSelector(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Change Scenario
-          </button>
-          <button
-            onClick={handleClearChat}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-          >
-            Clear Chat History
-          </button>
-        </div>
+        <FloatingActionButton
+          onScenarioClick={() => setShowScenarioSelector(true)}
+          onClearChat={handleClearChat}
+        />
       </div>
     </div>
   );
