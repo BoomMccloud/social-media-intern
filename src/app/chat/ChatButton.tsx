@@ -1,16 +1,17 @@
-import React from "react";
+import React, { FC } from "react";
 import { Button, Space, Typography } from "antd";
 import {
   UserOutlined,
   RobotOutlined,
   CompassOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 interface ButtonData {
   id: string;
-  text: string;
+  label: string;
   type: "user" | "agent" | "environment" | "system";
 }
 
@@ -19,90 +20,96 @@ interface ChatButtonProps {
   onButtonClick?: (buttonId: string, buttonText: string) => void;
 }
 
-const ChatButton: React.FC<ChatButtonProps> = ({ content, onButtonClick }) => {
-  // Extract buttons from content
+const ChatButton: FC<ChatButtonProps> = ({
+  content,
+  onButtonClick,
+}): JSX.Element => {
   const parseButtons = (text: string): ButtonData[] => {
-    const buttonRegex = /\[([\d.]+)\]\((.*?)\)/g;
-    const buttons: ButtonData[] = [];
-    let match;
+    console.log("Parsing text:", text);
+    const parsedButtons: ButtonData[] = [];
 
-    while ((match = buttonRegex.exec(text)) !== null) {
-      const id = match[1];
-      const text = match[2];
-      let type: ButtonData["type"] = "user";
-
-      // Determine button type based on ID
-      if (
-        id.startsWith("001.1") ||
-        id.startsWith("001.2") ||
-        id.startsWith("001.3")
-      ) {
-        type = "user";
-      } else if (
-        id.startsWith("001.4") ||
-        id.startsWith("001.5") ||
-        id.startsWith("001.6")
-      ) {
-        type = "agent";
-      } else if (
-        id.startsWith("001.7") ||
-        id.startsWith("001.8") ||
-        id.startsWith("001.9")
-      ) {
-        type = "environment";
-      } else if (id.startsWith("!sys")) {
-        type = "system";
-      }
-
-      buttons.push({ id, text, type });
+    // Extract everything between <buttons> tags
+    const buttonMatch = text.match(/<buttons>([\s\S]*?)<\/buttons>/);
+    if (!buttonMatch) {
+      console.log("No buttons section found");
+      return parsedButtons;
     }
 
-    return buttons;
+    const buttonContent = buttonMatch[1];
+    console.log("Button content:", buttonContent);
+
+    // Split into category sections
+    const categoryBlocks = buttonContent.split(/<category>/g).filter(Boolean);
+    console.log("Category blocks:", categoryBlocks);
+
+    categoryBlocks.forEach((block) => {
+      // Get category name
+      const categoryMatch = block.match(/^([^<]+)/);
+      if (!categoryMatch) return;
+
+      const categoryName = categoryMatch[1].trim().toLowerCase();
+      console.log("Processing category:", categoryName);
+
+      // Parse buttons in this category
+      const buttonMatches = block.matchAll(
+        /<button id="([^"]+)" label="([^"]+)"/g
+      );
+
+      for (const match of Array.from(buttonMatches)) {
+        const [_, id, label] = match;
+        const type: ButtonData["type"] =
+          categoryName === "system"
+            ? "system"
+            : categoryName === "agent actions"
+            ? "agent"
+            : categoryName === "environment actions"
+            ? "environment"
+            : "user";
+
+        parsedButtons.push({ id, label, type });
+      }
+    });
+
+    console.log("Final parsed buttons:", parsedButtons);
+    return parsedButtons;
   };
 
-  // Split content into message and buttons section
-  const parts = content.split("---\n\n#### **Actionable Buttons**");
+  // Split content and parse buttons with debug logging
+  const parts = content.split(/<buttons>/);
+  console.log("Split parts:", parts);
   const messageContent = parts[0];
-  const buttonsSection = parts[1];
+  const buttonsContent = parts[1] ? `<buttons>${parts[1]}` : "";
+  console.log("Message content:", messageContent);
+  console.log("Buttons content:", buttonsContent);
 
-  // Format message content - handle settings blocks and line breaks
-  const formattedMessage = messageContent
-    .replace(/\[Setting:.*?\]/g, (match) => `🎬 ${match}`)
-    .trim();
-
-  // Parse buttons if they exist
-  const buttons = buttonsSection ? parseButtons(buttonsSection) : [];
-
-  // Group buttons by type
-  const userButtons = buttons.filter((b) => b.type === "user");
-  const agentButtons = buttons.filter((b) => b.type === "agent");
-  const envButtons = buttons.filter((b) => b.type === "environment");
-  const sysButtons = buttons.filter((b) => b.type === "system");
+  const allButtons = buttonsContent ? parseButtons(buttonsContent) : [];
+  console.log("Parsed buttons:", allButtons);
+  const userButtons = allButtons.filter((b) => b.type === "user");
+  const agentButtons = allButtons.filter((b) => b.type === "agent");
+  const envButtons = allButtons.filter((b) => b.type === "environment");
+  const sysButtons = allButtons.filter((b) => b.type === "system");
 
   const renderButtonGroup = (
     title: string,
     buttonList: ButtonData[],
     icon: React.ReactNode
-  ) => {
+  ): JSX.Element | null => {
     if (buttonList.length === 0) return null;
 
     return (
-      <div style={{ marginBottom: 16 }}>
-        <Text
-          type="secondary"
-          style={{ display: "flex", alignItems: "center", marginBottom: 8 }}
-        >
-          {icon} <span style={{ marginLeft: 8 }}>{title}</span>
+      <div className="mb-4">
+        <Text type="secondary" className="flex items-center mb-2">
+          {icon} <span className="ml-2">{title}</span>
         </Text>
         <Space wrap>
           {buttonList.map((button) => (
             <Button
               key={button.id}
-              onClick={() => onButtonClick?.(button.id, button.text)}
-              type={button.type === "system" ? "primary" : "default"}
-              size="middle"
+              onClick={() => onButtonClick?.(button.id, button.label)}
+              type={button.type === "system" ? "text" : "default"}
+              size={button.type === "system" ? "small" : "middle"}
             >
-              {button.text}
+              {button.label}
             </Button>
           ))}
         </Space>
@@ -112,14 +119,10 @@ const ChatButton: React.FC<ChatButtonProps> = ({ content, onButtonClick }) => {
 
   return (
     <div>
-      {/* Render message content */}
-      <Paragraph style={{ whiteSpace: "pre-line", marginBottom: 16 }}>
-        {formattedMessage}
-      </Paragraph>
+      <div className="whitespace-pre-line mb-4">{messageContent.trim()}</div>
 
-      {/* Render buttons if they exist */}
-      {buttons.length > 0 && (
-        <>
+      {allButtons.length > 0 && (
+        <div className="mt-4">
           {renderButtonGroup("User Actions", userButtons, <UserOutlined />)}
           {renderButtonGroup("Agent Actions", agentButtons, <RobotOutlined />)}
           {renderButtonGroup(
@@ -127,21 +130,8 @@ const ChatButton: React.FC<ChatButtonProps> = ({ content, onButtonClick }) => {
             envButtons,
             <CompassOutlined />
           )}
-          {sysButtons.length > 0 && (
-            <Space wrap>
-              {sysButtons.map((button) => (
-                <Button
-                  key={button.id}
-                  type="text"
-                  size="small"
-                  onClick={() => onButtonClick?.(button.id, button.text)}
-                >
-                  {button.text}
-                </Button>
-              ))}
-            </Space>
-          )}
-        </>
+          {renderButtonGroup("System", sysButtons, <SettingOutlined />)}
+        </div>
       )}
     </div>
   );

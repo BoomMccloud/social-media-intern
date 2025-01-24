@@ -53,18 +53,15 @@ function ChatComponent() {
 
   // Then modify handleCharacterClick:
   const handleCharacterClick = (characterId: string) => {
-    // Don't do anything if clicking the same character
     if (characterId === currentCharacterId) return;
-
-    // Set loading state while we switch
     setIsLoading(true);
 
-    // Clear current chat panel
-    if (sessionId) {
-      clearSession(sessionId);
+    // Clear the current session before switching
+    const oldSessionId = `${currentCharacterId}-${llmConfigId || "default"}`;
+    if (oldSessionId) {
+      clearSession(oldSessionId);
     }
 
-    // Navigate to new character
     router.push(`/chat?characterId=${characterId}`);
   };
 

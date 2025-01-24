@@ -10,6 +10,10 @@ import { ScenarioSelector } from "@/components/ScenarioSelector";
 import { Scenario } from "@/types/scenario";
 import { Character } from "@/types/character";
 import FloatingActionButton from "@/components/FloatingActionButton";
+import CharacterSelect from "@/components/CharacterSelect";
+
+// Custom Response Render
+import CustomResponseRenderer from "./CustomResponseRenderer"; // Adjust the path based on where you saved the file
 
 const ErrorState = ({
   error,
@@ -82,10 +86,10 @@ export const ChatPanel = () => {
         })
         .then((character: Character) => {
           setCharacter(character);
-          if (sessionId) {
-            // Clear any existing messages for clean slate
-            clearSession(sessionId);
-          }
+          // if (sessionId) {
+          //   // Clear any existing messages for clean slate
+          //   clearSession(sessionId);
+          // }
         })
         .catch((error) => {
           console.error("Error fetching character:", error);
@@ -221,7 +225,7 @@ export const ChatPanel = () => {
   }, [messages]);
 
   if (!characterId) {
-    return <div>Select a character</div>;
+    return <CharacterSelect />;
   }
 
   if (status === "loading" || (!error && !character) || isLoading) {
