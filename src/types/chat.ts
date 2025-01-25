@@ -1,4 +1,6 @@
 // src/types/chat.ts
+import { RefObject } from "react";
+
 export interface Message {
   role: "user" | "assistant" | "system";
   content: string;
@@ -50,3 +52,14 @@ export interface LLMProvider {
     systemPrompt: string
   ): AsyncIterable<string>;
 }
+
+// types.ts or types.tsx
+
+export type StreamResponseComponentProps<AiMsg> = {
+  uid: string;
+  dataTransferMode: "stream";
+  status: "streaming" | "complete";
+  content?: AiMsg[] | undefined; // Correct the content type
+  serverResponse?: unknown[];
+  containerRef: RefObject<HTMLElement>;
+};

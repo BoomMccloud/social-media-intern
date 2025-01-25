@@ -11,6 +11,7 @@ import { Scenario } from "@/types/scenario";
 import { Character } from "@/types/character";
 import FloatingActionButton from "@/components/FloatingActionButton";
 import CharacterSelect from "@/components/CharacterSelect";
+import MyCustomRenderer from "@/components/CustomResponseRenderer";
 
 // Component to display error messages
 const ErrorState = ({
@@ -289,6 +290,9 @@ export const ChatPanel = () => {
             height: "100%",
           }}
           adapter={customStreamingAdapter(sessionId)} // pass custom streaming adapter
+          messageOptions={{
+            responseRenderer: MyCustomRenderer,
+          }}
           personaOptions={{
             // configure persona options to be used in the AiChat component
             assistant: {
