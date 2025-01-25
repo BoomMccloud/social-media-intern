@@ -1,6 +1,12 @@
 import { AiChat, ChatItem } from "@nlux/react";
 // import { Skeleton } from "antd"; // commented out, likely not used currently
-import { useCallback, useMemo, useState, useEffect } from "react";
+import React, {
+  useRef,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createStreamingAdapter, DEFAULT_CONFIG_ID } from "@/app/chat/stream";
