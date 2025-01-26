@@ -20,117 +20,77 @@ interface Category {
 }
 
 interface CustomChatButtonProps {
-  content: string;
-  onButtonClick?: (buttonId: string, buttonText: string) => void;
+  categories: Category[];
+  onButtonClick: (buttonId: string, buttonText: string) => void;
 }
 
-const parseButtons = (message: string): Category[] => {
-  const buttonsMatch = message.match(/<buttons>([^]*?)<\/buttons>/);
-
-  if (!buttonsMatch) return [];
-
-  const buttonsContent = buttonsMatch[1];
-  const categoryRegex = /<category>([^]*?)<\/category>([^]*?)(?=<category>|$)/g;
-  const categories: Category[] = [];
-  let categoryMatch;
-
-  while ((categoryMatch = categoryRegex.exec(buttonsContent)) !== null) {
-    const categoryName = categoryMatch[1];
-    const buttonsString = categoryMatch[2];
-    const buttonRegex = /<button id="([^"]+)" label="([^"]+)"\s*\/>/g;
-    const buttons: Button[] = [];
-    let buttonMatch;
-
-    while ((buttonMatch = buttonRegex.exec(buttonsString)) !== null) {
-      buttons.push({
-        id: buttonMatch[1],
-        label: buttonMatch[2],
-      });
-    }
-
-    categories.push({
-      name: categoryName,
-      buttons,
-    });
-  }
-  return categories;
-};
-
 const CustomChatButton: FC<CustomChatButtonProps> = ({
-  content,
+  categories,
   onButtonClick,
 }) => {
-  const handleButtonClick = (buttonId: string) => {
-    console.log(`Button clicked: ${buttonId}`);
-  };
+  const otherCategories = categories.filter(
+    (category) => category.name !== "System"
+  );
 
   const renderButtonGroup = (
     title: string,
     buttonList: Button[],
-    icon: React.ReactNode,
-    type?: "system"
+    icon: React.ReactNode
   ) => {
-    if (buttonList.length === 0) return null;
-
-    const mapButtons = (buttonList: Button[]) => {
-      return buttonList.map((button) => (
-        <AntButton
-          key={button.id}
-          onClick={() => onButtonClick?.(button.id, button.label)}
-          type="default"
-          size={type === "system" ? "small" : "middle"}
-        >
-          {button.label}
-        </AntButton>
-      ));
-    };
+    if (!buttonList.length) return null;
 
     return (
-      <div style={{ marginBottom: 16 }}>
+      <div key={title} style={{ marginBottom: 16 }}>
         <Text
           type="secondary"
           style={{ display: "flex", alignItems: "center", marginBottom: 8 }}
         >
           {icon} <span style={{ marginLeft: 8 }}>{title}</span>
         </Text>
-        <Space wrap>{mapButtons(buttonList)}</Space>
+        <Space wrap>
+          {buttonList.map((button) => (
+            <AntButton
+              key={button.id}
+              onClick={() => onButtonClick(button.id, button.label)}
+              type="default"
+              size="middle"
+            >
+              {button.label}
+            </AntButton>
+          ))}
+        </Space>
       </div>
     );
   };
 
-  const categories = parseButtons(content);
+  const getIcon = (categoryName: string) => {
+    switch (categoryName) {
+      case "User Actions":
+        return <UserOutlined />;
+      case "Agent Actions":
+        return <RobotOutlined />;
+      case "Environment Actions":
+        return <CompassOutlined />;
+      case "System":
+        return null; // System buttons are handled elsewhere, so don't return an icon
+      default:
+        console.warn(
+          `Unknown category "${categoryName}", using SettingOutlined icon.`
+        );
+        return <SettingOutlined />;
+    }
+  };
 
   return (
-    <>
-      {categories.map((category, catIndex) => {
-        if (category.name === "User Actions") {
-          return renderButtonGroup(
-            category.name,
-            category.buttons,
-            <UserOutlined />
-          );
-        } else if (category.name === "Agent Actions") {
-          return renderButtonGroup(
-            category.name,
-            category.buttons,
-            <RobotOutlined />
-          );
-        } else if (category.name === "Environment Actions") {
-          return renderButtonGroup(
-            category.name,
-            category.buttons,
-            <CompassOutlined />
-          );
-        } else {
-          return renderButtonGroup(
-            category.name,
-            category.buttons,
-            <SettingOutlined />,
-            "system"
-          );
-        }
-      })}
-    </>
+    <div>
+      {otherCategories.map((category) =>
+        renderButtonGroup(
+          category.name,
+          category.buttons,
+          getIcon(category.name)
+        )
+      )}
+    </div>
   );
 };
 

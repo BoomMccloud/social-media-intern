@@ -3,24 +3,24 @@
     "configId": "config-cd6c0460-4958-4e4f-b17d-484c048e47b0",
     "modelId": "cohere/command-r7b-12-2024",
     "temperature": 0.6,
-    "maxTokens": 1000
+    "maxTokens": 500
   },
   {
     "configId": "config-6bbb89e6-9488-4e3d-9716-a3ef8967da2c",
     "modelId": "microsoft/wizardlm-2-8x22b",
     "temperature": 0.6,
-    "maxTokens": 1000
+    "maxTokens": 500
   },
   {
     "configId": "config-70f14abe-88f3-45f1-86ef-8299663822b2",
     "modelId": "mistralai/mistral-nemo",
     "temperature": 0.6,
-    "maxTokens": 1000
+    "maxTokens": 500
   },
   {
     "configId": "config-987fcdeb-51d3-12a4-b456-426614174001",
     "modelId": "meta-llama/llama-3.2-1b-instruct",
     "temperature": 0.6,
-    "maxTokens": 1000
+    "maxTokens": 500
   }
 ]

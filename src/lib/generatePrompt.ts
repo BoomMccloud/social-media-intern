@@ -16,26 +16,45 @@ function generateButtons(
   baseId: string,
   context: { primaryLocation: string; profession: string }
 ): string {
-  return `<buttons>
-<category>User Actions</category>
-<button id="${baseId}.1" label="Share specific challenges"/>
-<button id="${baseId}.2" label="Ask for clarification"/>
-<button id="${baseId}.3" label="Request examples"/>
-
-<category>Agent Actions</category>
-<button id="${baseId}.4" label="Shares expertise from ${context.profession}"/>
-<button id="${baseId}.5" label="Demonstrates approach"/>
-<button id="${baseId}.6" label="Offers guidance"/>
-
-<category>Environment Actions</category>
-<button id="${baseId}.7" label="Explore ${context.primaryLocation}"/>
-<button id="${baseId}.8" label="Notice details"/>
-<button id="${baseId}.9" label="Consider atmosphere"/>
-
-<category>System</category>
-<button id="sys.0" label="Increase Verbosity"/>
-<button id="sys.1" label="Decrease Verbosity"/>
-</buttons>`;
+  const buttons = {
+    buttons: [
+      {
+        name: "User Actions",
+        buttons: [
+          { id: `${baseId}.1`, label: "Share specific challenges" },
+          { id: `${baseId}.2`, label: "Ask for clarification" },
+          { id: `${baseId}.3`, label: "Request examples" },
+        ],
+      },
+      {
+        name: "Agent Actions",
+        buttons: [
+          {
+            id: `${baseId}.4`,
+            label: `Shares expertise from ${context.profession}`,
+          },
+          { id: `${baseId}.5`, label: "Demonstrates approach" },
+          { id: `${baseId}.6`, label: "Offers guidance" },
+        ],
+      },
+      {
+        name: "Environment Actions",
+        buttons: [
+          { id: `${baseId}.7`, label: `Explore ${context.primaryLocation}` },
+          { id: `${baseId}.8`, label: "Notice details" },
+          { id: `${baseId}.9`, label: "Consider atmosphere" },
+        ],
+      },
+      {
+        name: "System",
+        buttons: [
+          { id: "sys.0", label: "Increase Verbosity" },
+          { id: "sys.1", label: "Decrease Verbosity" },
+        ],
+      },
+    ],
+  };
+  return JSON.stringify(buttons);
 }
 
 // Helper function to generate a character-specific example interaction
@@ -44,16 +63,16 @@ function generateExampleInteraction(character: Character): string {
   const primaryLocation = environment[0];
   const profession = occupation.split(",")[0];
 
-  return `
-#### Example Interaction:
-User Input: "I've been struggling to stay consistent with my projects. Any advice?"
+  const exampleObject = {
+    text: `*Setting: ${primaryLocation}*
 
-#### ${character.name}'s Response:
-*Setting: ${primaryLocation}*
+As I [character-specific response demonstrating current state of mind and unique communication style]...`,
+    buttons: JSON.parse(
+      generateButtons(character, "0", { primaryLocation, profession })
+    ),
+  };
 
-As I [character-specific response demonstrating current state of mind and unique communication style]...
-
-${generateButtons(character, "0", { primaryLocation, profession })}`;
+  return `START_JSON${JSON.stringify(exampleObject)}END_JSON`;
 }
 
 export function generatePrompt(
@@ -82,6 +101,42 @@ export function generatePrompt(
   const exampleDialogue =
     character.characterInfo.exampleDialogue?.[0]?.response || "";
 
+  const exampleOutput = {
+    text: "Example text content",
+    buttons: {
+      buttons: [
+        {
+          name: "User Actions",
+          buttons: [
+            { id: "2.1", label: "Example User Action 1" },
+            { id: "2.2", label: "Example User Action 2" },
+          ],
+        },
+        {
+          name: "Agent Actions",
+          buttons: [
+            { id: "2.4", label: "Example Agent Action 1" },
+            { id: "2.5", label: "Example Agent Action 2" },
+          ],
+        },
+        {
+          name: "Environment Actions",
+          buttons: [
+            { id: "2.7", label: "Example Environment Action 1" },
+            { id: "2.8", label: "Example Environment Action 2" },
+          ],
+        },
+        {
+          name: "System",
+          buttons: [
+            { id: "sys.0", label: "Increase Verbosity" },
+            { id: "sys.1", label: "Decrease Verbosity" },
+          ],
+        },
+      ],
+    },
+  };
+
   const prompt = `
 You are role-playing as **${character.name}**, a ${
     character.characterInfo.occupation
@@ -93,16 +148,14 @@ Primary Locations: ${character.characterInfo.environment.join(", ")}
 ${exampleDialogue ? `Example Dialogue: "${exampleDialogue}"` : ""}
 
 ### Response Structure
-1. Begin with the response content
-2. End with a structured buttons section using XML tags
+Respond with a JSON object containing the following keys, wrapped in \`START_JSON\` and \`END_JSON\`, with no markdown formatting or code block indicators:
+1.  \`text\`: the main response content for the character.
+2.  \`buttons\`: a structured JSON object containing the button data, with the following structure:
 
-### Button Format Requirements
-1. Wrap all buttons in <buttons></buttons> tags
-2. Group buttons by category using <category></category> tags
-3. Define each button using self-closing <button/> tags with id and label attributes
-4. Use consistent ID patterns: Start with response number, followed by action number (e.g., "001.1")
-5. Categories must include: "User Actions", "Agent Actions", "Environment Actions", and "System"
-6. Each response must maintain this structure consistently
+        ${JSON.stringify(exampleOutput, null, 2)}
+
+
+Do not include any markdown formatting or code block indicators.
 
 ### Example Interaction
 ${generateExampleInteraction(character)}
@@ -114,9 +167,7 @@ Remember to stay true to ${character.name}'s:
 - Personal traits: ${personality.join(", ")}
 - Typical environments: ${character.characterInfo.environment.join(", ")}
 
-Every response must follow this exact structure:
-1. Main content with setting and character's response
-2. XML-structured buttons section at the end`;
+Every response must be a valid JSON object wrapped in \`START_JSON\` and \`END_JSON\`, with text and buttons as keys.`;
 
   return prompt;
 }
